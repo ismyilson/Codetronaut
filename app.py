@@ -1,6 +1,6 @@
-import audio_handler as ah
+from handlers import audio_handler as ah, file_handler
+
 import processor as pr
-import file_handler
 import transcriber
 
 
@@ -21,3 +21,8 @@ class App:
             with file_handler.audio_to_file(frames, self.sample_size) as audio_file:
                 user_input = transcriber.transcribe(audio_file)
                 self.processor.process_command(user_input)
+
+
+if __name__ == '__main__':
+    application = App()
+    application.start()

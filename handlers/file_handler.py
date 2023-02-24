@@ -1,5 +1,5 @@
 from contextlib import contextmanager
-from audio_handler import (
+from handlers.audio_handler import (
     CHANNELS,
     RATE
 )

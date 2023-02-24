@@ -10,5 +10,7 @@ class CommandStop(MainCommand):
         'exit'
     ]
 
+    requires_sub_command = False
+
     def on_command(self, user_input):
         sys.exit(0)
