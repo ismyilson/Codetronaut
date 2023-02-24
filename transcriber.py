@@ -11,6 +11,8 @@ class UserInput:
     words: list
 
     def __init__(self, text):
+        text = text.lower()
+
         self.text = text
         self.words = text.replace('.', '').split()
 
