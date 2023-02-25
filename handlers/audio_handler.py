@@ -44,3 +44,9 @@ def record():
     stream.stop_stream()
 
     return frames
+
+
+def clean_up():
+    stream.stop_stream()
+    stream.close()
+    audio.terminate()

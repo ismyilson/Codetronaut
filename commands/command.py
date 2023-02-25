@@ -2,7 +2,7 @@ class BaseCommand:
     cmd: list
 
     def on_command(self, user_input):
-        pass
+        return ''
 
 
 class MainCommand(BaseCommand):

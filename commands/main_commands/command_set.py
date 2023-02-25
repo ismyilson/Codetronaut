@@ -1,4 +1,37 @@
+import tkinter as tk
+
+from tkinter.filedialog import askdirectory
+
 from commands.command import MainCommand, SubCommand, CommandError
+from context import CurrentContext
+
+
+class SubCommandSetDirectory(SubCommand):
+    cmd = [
+        'directory',
+    ]
+
+    def on_command(self, user_input):
+        root = tk.Tk()
+
+        root.withdraw()
+        root.overrideredirect(True)
+        root.geometry('0x0+0+0')
+
+        root.deiconify()
+        root.lift()
+        root.focus_force()
+
+        path = askdirectory(title='Select Folder')  # shows dialog box and return the path
+        root.destroy()
+
+        if path is None or path == '':
+            raise CommandError('Invalid directory')
+
+        CurrentContext.directory = path
+
+        folder = path[path.rindex('/') + 1:]
+        return f'Directory set to {folder}'
 
 
 class SubCommandSetEditor(SubCommand):
@@ -31,6 +64,7 @@ class SubCommandSetEditor(SubCommand):
         return CommandError('Could not find IDE')
 
     def set_vscode(self):
+        CurrentContext.editor = 'vscode'
         return 'Editor set to VSCode'
 
 
@@ -40,7 +74,8 @@ class CommandSet(MainCommand):
     ]
 
     sub_commands = [
-        SubCommandSetEditor()
+        SubCommandSetEditor(),
+        SubCommandSetDirectory()
     ]
 
     requires_sub_command = True
