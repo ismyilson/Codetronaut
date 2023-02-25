@@ -1,4 +1,5 @@
 import reader
+from editors.base import BaseEditor
 from handlers.file_handler import write_to_file, load_file
 from os import path
 
@@ -8,7 +9,7 @@ CONTEXT_SAVE_PATH = path.expandvars(r'%LOCALAPPDATA%\Voice2Code\context')
 
 class Context:
     directory: str
-    editor: str
+    editor: BaseEditor
 
     def __init__(self):
         self.load_context()
@@ -27,13 +28,21 @@ class Context:
         except FileNotFoundError:
             self._load_defaults()
 
+        self.read_config()
+
     def _load_defaults(self):
         self.directory = ''
-        self.editor = ''
+        self.editor = BaseEditor()
 
     def read_config(self):
-        reader.read_text(f'Directory set to: {self.get_directory()}')
-        reader.read_text(f'Editor set to: {self.editor}')
+        if self.directory != '':
+            reader.read_text(f'Directory set to: {self.get_directory()}')
+
+        if self.editor.editor_name != '':
+            reader.read_text(f'Editor set to: {self.editor.editor_name}')
+
+            if not self.editor.is_running():
+                self.editor.run(self.directory)
 
     def get_directory(self):
         idx = self.directory.rfind('/')

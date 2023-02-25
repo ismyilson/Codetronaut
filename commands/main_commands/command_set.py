@@ -4,6 +4,7 @@ from tkinter.filedialog import askdirectory
 
 from commands.command import MainCommand, SubCommand, CommandError
 from context import CurrentContext
+from editors.vscode import EditorVsCode
 
 
 class SubCommandSetDirectory(SubCommand):
@@ -64,7 +65,7 @@ class SubCommandSetEditor(SubCommand):
         return CommandError('Could not find IDE')
 
     def set_vscode(self):
-        CurrentContext.editor = 'vscode'
+        CurrentContext.editor = EditorVsCode()
         return 'Editor set to VSCode'
 
 
