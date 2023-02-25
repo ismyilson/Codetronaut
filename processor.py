@@ -36,7 +36,7 @@ class Processor:
 
     def _get_main_command(self, user_input):
         for command in COMMAND_LIST:
-            if user_input.contains_command(command):
+            if user_input.contains_word(command):
                 return command
 
         return None

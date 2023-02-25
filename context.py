@@ -1,5 +1,5 @@
 import reader
-from editors.base_editor import BaseEditor
+
 from handlers.file_handler import write_to_file, load_file
 from os import path
 
@@ -9,7 +9,7 @@ CONTEXT_SAVE_PATH = path.expandvars(r'%LOCALAPPDATA%\Voice2Code\context')
 
 class Context:
     directory: str
-    editor: BaseEditor
+    editor: None
 
     def __init__(self):
         self.load_context()
@@ -32,13 +32,13 @@ class Context:
 
     def _load_defaults(self):
         self.directory = ''
-        self.editor = BaseEditor()
+        self.editor = None
 
     def read_config(self):
         if self.directory != '':
             reader.read_text(f'Directory set to: {self.get_directory()}')
 
-        if self.editor.editor_name != '':
+        if self.editor is not None:
             reader.read_text(f'Editor set to: {self.editor.editor_name}')
 
             if not self.editor.is_running():

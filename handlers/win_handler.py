@@ -8,7 +8,7 @@ def run(name, exe_name, **kwargs):
     apps = winapps.search_installed(name)
     app_location = ''
     for app in apps:
-        app_location = get_relative_path(app.install_location, exe_name)
+        app_location = get_path_to_file(app.install_location, exe_name)
 
         if app_location != '':
             break
@@ -29,7 +29,9 @@ def process_is_running(exe_name):
     return exe_name.lower() in [p.name().lower() for p in psutil.process_iter()]
 
 
-def get_relative_path(path, file_name):
+def get_path_to_file(path, file_name):
     for root, dirs, files in os.walk(path):
         if file_name in files:
             return os.path.join(root, file_name)
+
+    return ''

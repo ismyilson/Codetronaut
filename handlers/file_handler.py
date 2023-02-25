@@ -41,7 +41,3 @@ def load_file(path):
     with open(path, 'rb') as file:
         data = pickle.load(file)
         return data
-
-
-def file_exists(directory, file_name, find_anywhere=True):
-    pass

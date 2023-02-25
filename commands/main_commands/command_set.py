@@ -80,10 +80,3 @@ class CommandSet(MainCommand):
     ]
 
     requires_sub_command = True
-
-    def on_command(self, user_input):
-        for sub_command in self.sub_commands:
-            if user_input.contains_command(sub_command):
-                return sub_command.on_command(user_input)
-
-        raise CommandError('Set requires something else')

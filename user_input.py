@@ -10,14 +10,16 @@ class UserInput:
     words: list
 
     def __init__(self, text):
-        text = text.lower()
+        text = text.lower().replace(',', '').replace('!', '')
 
         self.text = text
-        self.words = self._get_words(text)
+        self.words = []
+
+        self._get_words(text)
+
+        print(self.words)
 
     def _get_words(self, text):
-        words = []
-
         text = text.strip()
         idx = text.find(' ')
         while idx != -1:
@@ -25,27 +27,13 @@ class UserInput:
             text = text[idx+1:]
 
             if self._is_valid_word(word):
-                if '.' in word:
-                    word = word.replace('.', '')
-
-                    words.append(word)
-                    words.append('.')
-                else:
-                    words.append(word)
+                self._add_word(word)
 
             idx = text.find(' ')
 
         word = text[0:]
         if self._is_valid_word(word):
-            if '.' in word:
-                word = word.replace('.', '')
-
-                words.append(word)
-                words.append('.')
-            else:
-                words.append(word)
-
-        return words
+            self._add_word(word)
 
     def _is_valid_word(self, word):
         if word == '':
@@ -55,6 +43,20 @@ class UserInput:
             return False
 
         return True
+
+    def _add_word(self, word):
+        if '.' in word:
+            dot_idx = word.index('.')
+            try:
+                if word[dot_idx + 1] == ' ':
+                    self.words.append(word.replace('.', ''))
+                    self.words.append('.')
+                else:
+                    self.words.append(word)
+            except IndexError:
+                self.words.append(word.replace('.', ''))
+        else:
+            self.words.append(word)
 
     def _is_connector(self, word):
         return word in CONNECTORS
@@ -69,6 +71,6 @@ class UserInput:
 
         return -1
 
-    def contains_command(self, command):
+    def contains_word(self, command):
         return any(x in command.cmd for x in self.words)
 
