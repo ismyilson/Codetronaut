@@ -4,3 +4,5 @@ psutil==5.9.4
 PyAudio==0.2.13
 pyttsx3==2.90
 torch==1.13.1
+future~=0.18.3
+winapps~=0.2.0

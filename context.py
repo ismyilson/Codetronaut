@@ -1,5 +1,5 @@
 import reader
-from editors.base import BaseEditor
+from editors.base_editor import BaseEditor
 from handlers.file_handler import write_to_file, load_file
 from os import path
 
@@ -47,6 +47,11 @@ class Context:
     def get_directory(self):
         idx = self.directory.rfind('/')
         return self.directory[idx + 1:] if idx != -1 else self.directory
+
+    def clean_up(self):
+        self.editor.close()
+
+        self.save_context()
 
     def _get_config(self):
         return {

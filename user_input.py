@@ -61,10 +61,11 @@ class UserInput:
 
     def word_index(self, word_list):
         for word in word_list:
-            word_index = self.words.index(word)
-
-            if word_index != -1:
+            try:
+                word_index = self.words.index(word)
                 return word_index
+            except ValueError:
+                continue
 
         return -1
 

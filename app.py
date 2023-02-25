@@ -3,6 +3,8 @@ import atexit
 import processor as pr
 import transcriber
 
+from context import CurrentContext
+
 from handlers import audio_handler, file_handler
 
 
@@ -29,6 +31,8 @@ class App:
 
         self.processor.clean_up()
         audio_handler.clean_up()
+
+        CurrentContext.clean_up()
 
 
 if __name__ == '__main__':

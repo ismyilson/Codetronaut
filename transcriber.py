@@ -14,7 +14,8 @@ def transcribe(file):
 
     # Transcribe
     decode_options = {
-        'fp16': False
+        'fp16': False,
+        'language': 'en'
     }
     result = whisper.transcribe(model, audio, **decode_options)
 

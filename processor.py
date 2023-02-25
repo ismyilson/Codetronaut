@@ -1,6 +1,5 @@
 import reader
 
-from context import CurrentContext
 from commands.command_list import COMMAND_LIST
 from commands.command import CommandError
 
@@ -43,4 +42,4 @@ class Processor:
         return None
 
     def clean_up(self):
-        CurrentContext.save_context()
+        pass
