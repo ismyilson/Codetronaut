@@ -17,6 +17,7 @@ class SubCommandCreateFile(SubCommand):
 
         path = f'{CurrentContext.workdir}{CurrentContext.current_directory}{file_name}'
         if CurrentContext.editor.create_file(path):
+            CurrentContext.editor.go_to_file(file_name)
             return CommandResult(CommandStatus.STATUS_SUCCESS, f'File created')
         else:
             return CommandResult(CommandStatus.STATUS_FAILED, f'File already exists')
