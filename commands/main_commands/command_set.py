@@ -2,7 +2,7 @@ import tkinter as tk
 
 from tkinter.filedialog import askdirectory
 
-from commands.command import MainCommand, SubCommand, CommandError
+from commands.command import MainCommand, SubCommand, CommandError, CommandResult, CommandStatus
 from context import CurrentContext
 from editors.vscode import EditorVsCode
 
@@ -29,10 +29,11 @@ class SubCommandSetDirectory(SubCommand):
         if path is None or path == '':
             raise CommandError('Invalid directory')
 
-        CurrentContext.directory = path
-
         folder = path[path.rindex('/') + 1:]
-        return f'Directory set to {folder}'
+
+        CurrentContext.workdir = path
+        CurrentContext.current_directory = '/'
+        return CommandResult(CommandStatus.STATUS_SUCCESS, f'Work directory set to {folder}')
 
 
 class SubCommandSetEditor(SubCommand):
@@ -60,13 +61,18 @@ class SubCommandSetEditor(SubCommand):
 
             for value in values:
                 if ide_name in value[0]:
-                    return value[1]()
+                    ret = value[1]()
 
-        return CommandError('Could not find IDE')
+                    if ret.status == CommandStatus.STATUS_SUCCESS:
+                        CurrentContext.editor.run(CurrentContext.workdir)
+
+                    return ret
+
+        return CommandError('Could not find Editor')
 
     def set_vscode(self):
         CurrentContext.editor = EditorVsCode()
-        return 'Editor set to VSCode'
+        return CommandResult(CommandStatus.STATUS_SUCCESS, 'Editor set to VSCode')
 
 
 class CommandSet(MainCommand):

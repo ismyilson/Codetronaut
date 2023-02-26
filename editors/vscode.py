@@ -1,6 +1,7 @@
 import pyautogui
 
 from editors.base_editor import BaseEditor
+from handlers import win_handler
 
 
 class EditorVsCode(BaseEditor):
@@ -24,4 +25,4 @@ class EditorVsCode(BaseEditor):
 
         pyautogui.write(file_name)
         pyautogui.press('enter')
-        return f'Loaded file {file_name}'
+        return True

@@ -8,8 +8,10 @@ CONTEXT_SAVE_PATH = path.expandvars(r'%LOCALAPPDATA%\Voice2Code\context')
 
 
 class Context:
-    directory: str
+    workdir: str
     editor: None
+
+    current_directory: str
 
     def __init__(self):
         self.load_context()
@@ -31,22 +33,24 @@ class Context:
         self.read_config()
 
     def _load_defaults(self):
-        self.directory = ''
+        self.workdir = ''
         self.editor = None
 
+        self.current_directory = ''
+
     def read_config(self):
-        if self.directory != '':
+        if self.workdir != '':
             reader.read_text(f'Directory set to: {self.get_directory()}')
 
         if self.editor is not None:
             reader.read_text(f'Editor set to: {self.editor.editor_name}')
 
             if not self.editor.is_running():
-                self.editor.run(self.directory)
+                self.editor.run(self.workdir)
 
     def get_directory(self):
-        idx = self.directory.rfind('/')
-        return self.directory[idx + 1:] if idx != -1 else self.directory
+        idx = self.workdir.rfind('/')
+        return self.workdir[idx + 1:] if idx != -1 else self.workdir
 
     def clean_up(self):
         self.editor.close()
@@ -55,8 +59,9 @@ class Context:
 
     def _get_config(self):
         return {
-            'directory': self.directory,
-            'editor': self.editor
+            'workdir': self.workdir,
+            'editor': self.editor,
+            'current_directory': self.current_directory
         }
 
 

@@ -17,7 +17,7 @@ class MainCommand(BaseCommand):
                 return sub_command.on_command(user_input)
 
         if self.requires_sub_command:
-            raise CommandError(f'{self.cmd[0]} requires something else')
+            raise CommandError(f'{self.cmd[0]} requires subcommand')
 
 
 class SubCommand(BaseCommand):
@@ -33,3 +33,17 @@ class CommandError(Exception):
 
     def __str__(self):
         return self.msg
+
+
+class CommandStatus:
+    STATUS_SUCCESS = 'success'
+    STATUS_FAILED = 'failed'
+
+
+class CommandResult:
+    status: CommandStatus
+    response: str
+
+    def __init__(self, status, response):
+        self.status = status
+        self.response = response

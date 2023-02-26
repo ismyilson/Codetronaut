@@ -1,7 +1,9 @@
 import atexit
 
 import processor as pr
+import reader
 import transcriber
+from commands.command import CommandError
 
 from context import CurrentContext
 
@@ -24,7 +26,11 @@ class App:
 
             with file_handler.audio_to_file(frames, self.sample_size) as audio_file:
                 user_input = transcriber.transcribe(audio_file)
-                self.processor.process_command(user_input)
+
+                try:
+                    self.processor.process_command(user_input)
+                except CommandError as e:
+                    reader.read_text(str(e))
 
     def clean_up(self):
         print('Cleaning up')

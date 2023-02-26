@@ -29,7 +29,27 @@ def process_is_running(exe_name):
     return exe_name.lower() in [p.name().lower() for p in psutil.process_iter()]
 
 
-def get_path_to_file(path, file_name):
+def create_file(path):
+    f = open(path, 'x')
+    f.close()
+
+
+def get_path_to_file(path, file_name, recursive=True):
+    if recursive:
+        return _get_path_to_file_recursive(path, file_name)
+    else:
+        return _get_path_to_file(path, file_name)
+
+
+def _get_path_to_file(path, file_name):
+    for file in os.listdir(path):
+        if file == file_name:
+            return os.path.join(path, file_name)
+
+    return ''
+
+
+def _get_path_to_file_recursive(path, file_name):
     for root, dirs, files in os.walk(path):
         if file_name in files:
             return os.path.join(root, file_name)

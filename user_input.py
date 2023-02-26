@@ -12,6 +12,8 @@ class UserInput:
     def __init__(self, text):
         text = text.lower().replace(',', '').replace('!', '')
 
+        print(text)
+
         self.text = text
         self.words = []
 
@@ -46,15 +48,19 @@ class UserInput:
 
     def _add_word(self, word):
         if '.' in word:
-            dot_idx = word.index('.')
-            try:
-                if word[dot_idx + 1] == ' ':
+            dot_idx = word.find('.')
+            while dot_idx != -1:
+                try:
+                    if word[dot_idx + 1] == ' ':
+                        self.words.append(word.replace('.', ''))
+                        self.words.append('.')
+                    else:
+                        self.words.append(word)
+
+                    dot_idx = word[dot_idx + 1:].find('.')
+                except IndexError:
                     self.words.append(word.replace('.', ''))
-                    self.words.append('.')
-                else:
-                    self.words.append(word)
-            except IndexError:
-                self.words.append(word.replace('.', ''))
+                    break
         else:
             self.words.append(word)
 

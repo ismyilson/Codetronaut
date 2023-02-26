@@ -30,8 +30,15 @@ class BaseEditor:
     def is_running(self):
         return win_handler.process_is_running(self.exe_name)
 
+    def create_file(self, full_path):
+        try:
+            win_handler.create_file(full_path)
+            return True
+        except FileExistsError:
+            return False
+
     def go_to_file(self, file_name):
-        return
+        return False
 
     def close(self):
         if self.is_running():

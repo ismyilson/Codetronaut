@@ -1,9 +1,9 @@
-from commands.command import MainCommand, SubCommand, CommandError
+from commands.command import MainCommand, SubCommand, CommandError, CommandStatus, CommandResult
 from context import CurrentContext
 from handlers import win_handler
 
 
-class SubCommandFile(SubCommand):
+class SubCommandGoToFile(SubCommand):
     cmd = [
         'file'
     ]
@@ -16,11 +16,14 @@ class SubCommandFile(SubCommand):
 
         file_name = ''.join(user_input.words[command_index + 1:])
 
-        path = win_handler.get_path_to_file(CurrentContext.directory, file_name)
+        path = win_handler.get_path_to_file(CurrentContext.workdir, file_name)
         if path == '':
-            return f'File {file_name} not found'
+            return CommandResult(CommandStatus.STATUS_FAILED, f'File {file_name} not found')
 
-        return CurrentContext.editor.go_to_file(file_name)
+        if CurrentContext.editor.go_to_file(file_name):
+            return CommandResult(CommandStatus.STATUS_SUCCESS, f'File loaded')
+        else:
+            return CommandResult(CommandStatus.STATUS_FAILED, f'Could not load file')
 
 
 class CommandGo(MainCommand):
@@ -30,7 +33,7 @@ class CommandGo(MainCommand):
     ]
 
     sub_commands = [
-        SubCommandFile()
+        SubCommandGoToFile()
     ]
 
     requires_sub_command = True
