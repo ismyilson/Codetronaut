@@ -78,5 +78,5 @@ class UserInput:
         return -1
 
     def contains_word(self, command):
-        return any(x in command.cmd for x in self.words)
+        return any(x in command.cmd_text for x in self.words)
 

@@ -1,12 +1,12 @@
-from commands.main_commands.command_create import CommandCreate
-from commands.main_commands.command_go import CommandGo
-from commands.main_commands.command_stop import CommandStop
-from commands.main_commands.command_set import CommandSet
+from commands.main_commands.command_create import MainCommandCreate
+from commands.main_commands.command_go import MainCommandGo
+from commands.main_commands.command_stop import MainCommandStop
+from commands.main_commands.command_set import MainCommandSet
 
 
 COMMAND_LIST = [
-    CommandStop(),
-    CommandSet(),
-    CommandGo(),
-    CommandCreate()
+    MainCommandStop,
+    MainCommandSet,
+    MainCommandGo,
+    MainCommandCreate
 ]

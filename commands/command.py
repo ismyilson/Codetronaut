@@ -1,49 +1,21 @@
 class BaseCommand:
-    cmd: list
+    cmd_text: list = []
 
-    def on_command(self, user_input):
-        pass
+    requires_data: bool = False
+    data: str = None
+
+    def execute(self):
+        return
+
+    def _is_valid_data(self):
+        return True
 
 
 class MainCommand(BaseCommand):
-    sub_commands: list
-    requires_sub_command: bool
+    sub_commands: list = []
 
-    def on_command(self, user_input):
-        super().on_command(user_input)
-
-        for sub_command in self.sub_commands:
-            if user_input.contains_word(sub_command):
-                return sub_command.on_command(user_input)
-
-        if self.requires_sub_command:
-            raise CommandError(f'{self.cmd[0]} requires subcommand')
+    requires_sub_command: bool = False
 
 
 class SubCommand(BaseCommand):
-    def get_values(self):
-        return []
-
-
-class CommandError(Exception):
-    msg: str
-
-    def __init__(self, msg):
-        self.msg = msg
-
-    def __str__(self):
-        return self.msg
-
-
-class CommandStatus:
-    STATUS_SUCCESS = 'success'
-    STATUS_FAILED = 'failed'
-
-
-class CommandResult:
-    status: CommandStatus
-    response: str
-
-    def __init__(self, status, response):
-        self.status = status
-        self.response = response
+    pass

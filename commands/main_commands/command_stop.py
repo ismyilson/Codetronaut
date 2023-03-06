@@ -3,8 +3,8 @@ import sys
 from commands.command import MainCommand
 
 
-class CommandStop(MainCommand):
-    cmd = [
+class MainCommandStop(MainCommand):
+    cmd_text = [
         'stop',
         'quit',
         'exit'
@@ -12,5 +12,5 @@ class CommandStop(MainCommand):
 
     requires_sub_command = False
 
-    def on_command(self, user_input):
-        sys.exit(0)
+    def execute(self):
+        sys.exit(1)

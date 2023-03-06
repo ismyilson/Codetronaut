@@ -1,7 +1,6 @@
 import pyautogui
 
 from editors.base_editor import BaseEditor
-from handlers import win_handler
 
 
 class EditorVsCode(BaseEditor):
