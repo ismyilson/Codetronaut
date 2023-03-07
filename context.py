@@ -1,4 +1,4 @@
-import reader
+from audio import reader
 
 from handlers.file_handler import write_to_file, load_file
 from os import path

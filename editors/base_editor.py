@@ -1,4 +1,4 @@
-import reader
+from audio import reader
 
 from handlers import win_handler
 

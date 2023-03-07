@@ -16,22 +16,18 @@ RECORD_SECONDS = 30
 class AudioInput:
     """
     Handles the user audio input.
-
-    Attributes:
-        audio: A PyAudio object.
-        stream: A stream from the PyAudio object.
     """
 
-    audio: pyaudio.PyAudio
-    stream: pyaudio.Stream
+    _audio: pyaudio.PyAudio
+    _stream: pyaudio.Stream
 
     def __init__(self):
         """
         Create a PyAudio object and an audio stream. The stream is closed by default.
         """
 
-        self.audio = pyaudio.PyAudio()
-        self.stream = self.audio.open(format=FORMAT, channels=CHANNELS, rate=RATE, input=True, frames_per_buffer=CHUNK, start=False)
+        self._audio = pyaudio.PyAudio()
+        self._stream = self._audio.open(format=FORMAT, channels=CHANNELS, rate=RATE, input=True, frames_per_buffer=CHUNK, start=False)
 
     def get_input(self):
         """
@@ -43,7 +39,7 @@ class AudioInput:
 
         frames = self._record()
 
-        with file_handler.audio_to_file(frames, self.audio.get_sample_size(FORMAT)) as audio_file:
+        with file_handler.audio_to_file(frames, self._audio.get_sample_size(FORMAT)) as audio_file:
             text = transcriber.transcribe(audio_file)
 
         return UserInput(text)
@@ -60,11 +56,11 @@ class AudioInput:
         retries = 0
         frames = []
 
-        self.stream.start_stream()
+        self._stream.start_stream()
 
         print('Recording...')
         for i in range(int(RATE / CHUNK * RECORD_SECONDS)):
-            data = np.frombuffer(self.stream.read(CHUNK), dtype=np.int16)
+            data = np.frombuffer(self._stream.read(CHUNK), dtype=np.int16)
             peak = np.average(np.abs(data)) * 2
 
             if int(50 * peak / 2 ** 16) < 1:
@@ -79,15 +75,15 @@ class AudioInput:
             frames.append(data)
         print('Recording stop')
 
-        self.stream.stop_stream()
+        self._stream.stop_stream()
 
         return frames
 
     def clean_up(self):
         """
-        Closes all left open streams of audio.
+        Closes all open streams of audio.
         """
 
-        self.stream.stop_stream()
-        self.stream.close()
-        self.audio.terminate()
+        self._stream.stop_stream()
+        self._stream.close()
+        self._audio.terminate()

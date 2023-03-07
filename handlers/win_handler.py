@@ -1,6 +1,6 @@
 import winapps
 import psutil
-import reader
+from audio import reader
 import os
 
 

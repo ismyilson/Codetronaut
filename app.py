@@ -1,44 +1,23 @@
+from processor import Processor
+
 import atexit
-
-import processor as pr
-import reader
-import transcriber
-from commands.command import CommandError
-
-from context import CurrentContext
-
-from handlers import audio_handler, file_handler
 
 
 class App:
-    processor: pr.Processor
+    processor: Processor
 
     def __init__(self):
-        self.processor = pr.Processor()
-
-        self.sample_size = audio_handler.get_sample_size()
+        self.processor = Processor()
 
         atexit.register(self.clean_up)
 
     def start(self):
-        while True:
-            frames = audio_handler.record()
-
-            with file_handler.audio_to_file(frames, self.sample_size) as audio_file:
-                user_input = transcriber.transcribe(audio_file)
-
-                try:
-                    self.processor.process_command(user_input)
-                except CommandError as e:
-                    reader.read_text(str(e))
+        self.processor.start()
 
     def clean_up(self):
         print('Cleaning up')
 
-        self.processor.clean_up()
-        audio_handler.clean_up()
-
-        CurrentContext.clean_up()
+        # self.processor.clean_up()
 
 
 if __name__ == '__main__':
