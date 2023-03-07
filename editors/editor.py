@@ -3,7 +3,7 @@ from audio import reader
 from handlers import win_handler
 
 
-class BaseEditor:
+class Editor:
     editor_name: str
     exe_name: str
     pid: int

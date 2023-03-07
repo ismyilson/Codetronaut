@@ -1,4 +1,4 @@
-class BaseCommand:
+class Command:
     cmd_text: list = []
 
     requires_data: bool = False
@@ -11,11 +11,11 @@ class BaseCommand:
         return True
 
 
-class MainCommand(BaseCommand):
+class MainCommand(Command):
     sub_commands: list = []
 
     requires_sub_command: bool = False
 
 
-class SubCommand(BaseCommand):
+class SubCommand(Command):
     pass

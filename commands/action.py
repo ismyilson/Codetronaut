@@ -1,4 +1,4 @@
-from commands.command import BaseCommand
+from commands.command import Command
 
 
 class ActionStatus:
@@ -11,7 +11,7 @@ class ActionStatus:
 
 class Action:
     status: ActionStatus
-    command: BaseCommand
+    command: Command
 
     def __init__(self, status, command):
         self.status = status

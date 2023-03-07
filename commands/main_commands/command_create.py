@@ -1,4 +1,4 @@
-from commands.command import BaseCommand, SubCommand
+from commands.command import MainCommand, SubCommand
 
 
 class SubCommandFile(SubCommand):
@@ -9,7 +9,7 @@ class SubCommandFile(SubCommand):
     requires_data = True
 
 
-class MainCommandCreate(BaseCommand):
+class MainCommandCreate(MainCommand):
     cmd_text = [
         'create'
     ]

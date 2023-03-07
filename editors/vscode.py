@@ -1,9 +1,9 @@
 import pyautogui
 
-from editors.base_editor import BaseEditor
+from editors.editor import Editor
 
 
-class EditorVsCode(BaseEditor):
+class EditorVsCode(Editor):
     HOTKEYS = {
         'gotofile': [
             'ctrl',
