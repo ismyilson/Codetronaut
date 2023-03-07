@@ -14,15 +14,33 @@ RECORD_SECONDS = 30
 
 
 class AudioInput:
+    """
+    Handles the user audio input.
+
+    Attributes:
+        audio: A PyAudio object.
+        stream: A stream from the PyAudio object.
+    """
 
     audio: pyaudio.PyAudio
     stream: pyaudio.Stream
 
     def __init__(self):
+        """
+        Create a PyAudio object and an audio stream. The stream is closed by default.
+        """
+
         self.audio = pyaudio.PyAudio()
         self.stream = self.audio.open(format=FORMAT, channels=CHANNELS, rate=RATE, input=True, frames_per_buffer=CHUNK, start=False)
 
     def get_input(self):
+        """
+        Grabs audio input from the user's default input device for 30 seconds or until silence, and transcribes it.
+
+        Returns:
+            An object of type UserInput.
+        """
+
         frames = self._record()
 
         with file_handler.audio_to_file(frames, self.audio.get_sample_size(FORMAT)) as audio_file:
@@ -31,6 +49,13 @@ class AudioInput:
         return UserInput(text)
 
     def _record(self):
+        """
+        Records frames from the user's default input device for RECORD_SECONDS or until silence.
+
+        Returns:
+            A list of frames.
+        """
+
         just_started = True
         retries = 0
         frames = []
@@ -59,6 +84,10 @@ class AudioInput:
         return frames
 
     def clean_up(self):
+        """
+        Closes all left open streams of audio.
+        """
+
         self.stream.stop_stream()
         self.stream.close()
         self.audio.terminate()
