@@ -1,10 +1,29 @@
+from audio.audio_input import AudioInput
+
 from commands.action import Action, ActionStatus
 from commands.command_list import COMMAND_LIST
 
 
 class Processor:
+    audio_input: AudioInput
+
     def __init__(self):
-        pass
+        self.audio_input = AudioInput()
+
+    def start(self):
+        self._loop()
+
+    def _loop(self):
+        while True:
+            user_input = self.audio_input.get_input()
+
+            action = self.process_command(user_input.text)
+            self.do_action(action)
+
+    def do_action(self, action):
+        if action.status == ActionStatus.READY:
+            command_instance = action.command()
+            command_instance.execute()
 
     def process_commands(self, command_text):
         """

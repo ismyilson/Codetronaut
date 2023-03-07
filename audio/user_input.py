@@ -53,7 +53,7 @@ class UserInput:
                 try:
                     if word[dot_idx + 1] == ' ':
                         self.words.append(word.replace('.', ''))
-                        self.words.append('.')
+                        self.words.append('..')
                     else:
                         self.words.append(word)
 
