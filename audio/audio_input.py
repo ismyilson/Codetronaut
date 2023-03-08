@@ -1,9 +1,13 @@
+import os
 import pyaudio
 import numpy as np
+import tempfile
+import wave
+
+from contextlib import contextmanager
 
 from audio import transcriber
-from handlers import file_handler
-from user_input import UserInput
+from audio.user_input import UserInput
 
 
 FORMAT = pyaudio.paInt16
@@ -11,6 +15,22 @@ CHANNELS = 2
 RATE = 44100
 CHUNK = 1024
 RECORD_SECONDS = 30
+
+
+@contextmanager
+def audio_to_file(frames, sample_size):
+    tmp = tempfile.NamedTemporaryFile(delete=False)
+    wave_file = wave.open(tmp, 'wb')
+    wave_file.setnchannels(CHANNELS)
+    wave_file.setsampwidth(sample_size)
+    wave_file.setframerate(RATE)
+    wave_file.writeframes(b''.join(frames))
+
+    yield tmp.name
+
+    wave_file.close()
+    tmp.close()
+    os.unlink(tmp.name)
 
 
 class AudioInput:
@@ -39,7 +59,7 @@ class AudioInput:
 
         frames = self._record()
 
-        with file_handler.audio_to_file(frames, self._audio.get_sample_size(FORMAT)) as audio_file:
+        with audio_to_file(frames, self._audio.get_sample_size(FORMAT)) as audio_file:
             text = transcriber.transcribe(audio_file)
 
         return UserInput(text)
