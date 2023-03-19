@@ -17,14 +17,16 @@ class CommandStop(MainCommand):
     cmd = ['stop', 'quit', 'exit', 'leave', 'bye']
 
     def execute(self, context):
+        reader.read_text('See you later')
+
         t_event_quit.set()
 
 
-class SubcommandSetIDE(SubCommand):
+class SubcommandSetEditor(SubCommand):
     cmd = ['ide', 'editor']
 
     def execute(self, context):
-        print('Called set IDE')
+        print('Called set Editor')
 
 
 class CommandSet(MainCommand):
@@ -33,7 +35,7 @@ class CommandSet(MainCommand):
     requires_subcommand = True
 
     subcommands = [
-        SubcommandSetIDE
+        SubcommandSetEditor
     ]
 
     def execute(self, context):

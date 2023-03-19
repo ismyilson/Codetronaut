@@ -22,10 +22,8 @@ class Processor(threading.Thread):
         self._queue = processor_queue
         self._gui_data_queue = gui_data_queue
 
-        self._commands = get_commands()
-        print(f'Loaded {len(self._commands)} commands')
-
-        self.context = Context()
+    def _clean_up(self):
+        print('Cleaning up processor')
 
     def _loop(self):
         while not t_event_quit.is_set():
@@ -105,8 +103,10 @@ class Processor(threading.Thread):
 
         return None, -1
 
-    def _clean_up(self):
-        print('Cleaning up processor')
-
     def run(self):
+        self._commands = get_commands()
+        print(f'Loaded {len(self._commands)} commands')
+
+        self.context = Context()
+
         self._loop()

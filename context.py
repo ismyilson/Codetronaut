@@ -14,9 +14,9 @@ class Context:
     prog_lang: BaseProgrammingLanguage
 
     def __init__(self):
-        self._setup_platform()
+        self._get_platform()
 
-    def _setup_platform(self):
+    def _get_platform(self):
         os_name = platform.system()
 
         platform_class = PLATFORMS.get(os_name, None)

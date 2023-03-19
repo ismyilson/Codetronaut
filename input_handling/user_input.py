@@ -26,6 +26,7 @@ class UserInput:
     def _make_sanitized_text(self, text):
         text = text.lower()
         text = text.strip()
+        text = text.replace('!', '').replace('?', '')
 
         return text
 
