@@ -4,15 +4,13 @@ class UserInput:
     text: str
     raw_text: str
 
-    commands: list
-    words: list
+    commands: list[list[str]]
 
     def __init__(self, text):
         self.raw_text = ''
         self.text = ''
 
         self.commands = []
-        self.words = []
 
         self._process_text(text)
 
@@ -23,7 +21,6 @@ class UserInput:
         if len(self.text) == 0:
             return
 
-        self.words = self._get_words()
         self.commands = self._get_commands()
 
     def _make_sanitized_text(self, text):
@@ -34,7 +31,6 @@ class UserInput:
 
     def _get_words(self):
         words = self.text.split(' ')
-        print(words)
 
         to_insert = []
         for i in range(0, len(words)):
@@ -48,15 +44,16 @@ class UserInput:
         return words
 
     def _get_commands(self):
+        words = self._get_words()
         commands = []
 
         last_idx = 0
-        for i in range(0, len(self.words)):
-            if self.words[i] == '.':
-                commands.append(' '.join(self.words[last_idx:i]))
+        for i in range(0, len(words)):
+            if words[i] == '.':
+                commands.append(words[last_idx:i])
                 last_idx = i + 1
 
-        if last_idx != len(self.words):
-            commands.append(' '.join(self.words[last_idx:]))
+        if last_idx != len(words):
+            commands.append(words[last_idx:])
 
         return commands

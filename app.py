@@ -1,6 +1,6 @@
 import queue
 
-from audio_recorder import AudioRecorder
+from input_handling.audio_recorder import AudioRecorder
 from global_vars import t_event_record, t_event_not_muted
 from processor import Processor
 from gui import GUI
@@ -44,6 +44,9 @@ class App:
 
     def _start_gui(self):
         self._gui.start()
+
+        self._audio_recorder.join()
+        self._processor.join()
 
 
 if __name__ == '__main__':

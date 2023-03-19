@@ -1,4 +1,5 @@
+import abc
 
 
-class BaseProgrammingLanguage:
+class BaseProgrammingLanguage(abc.ABC):
     pass

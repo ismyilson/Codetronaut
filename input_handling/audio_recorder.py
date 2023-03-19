@@ -8,16 +8,16 @@ import numpy as np
 import transcriber
 
 from contextlib import contextmanager
-from global_vars import t_event_record, t_event_not_muted
-from user_input.user_input import UserInput
+from global_vars import t_event_record, t_event_not_muted, t_event_quit
+from input_handling.user_input import UserInput
 
 FORMAT = pyaudio.paInt16
 CHANNELS = 1
-RATE = 48100
-CHUNK = 2048
+RATE = 48000
+CHUNK = 512
 RECORD_SECONDS = 30
 
-MAX_RETRIES = 30
+MAX_RETRIES = 100
 
 
 @contextmanager
@@ -43,7 +43,7 @@ class AudioRecorder(threading.Thread):
     _processor_queue: queue.Queue
 
     def __init__(self, processor_queue):
-        super().__init__(daemon=True)
+        super().__init__()
 
         self._audio = pyaudio.PyAudio()
         self._stream = self._audio.open(format=FORMAT,
@@ -55,22 +55,31 @@ class AudioRecorder(threading.Thread):
         self._processor_queue = processor_queue
 
     def _loop(self):
-        while True:
+        while not t_event_quit.is_set():
             t_event_record.wait()
             t_event_not_muted.wait()
 
             frames = self._record()
+
+            if t_event_quit.is_set():
+                break
 
             if not frames:
                 continue
 
             with audio_to_file(frames, self._audio.get_sample_size(FORMAT)) as audio_file:
                 text = transcriber.transcribe(audio_file)
+
+                if text == '':
+                    continue
+
                 user_input = UserInput(text)
 
             self._processor_queue.put(user_input)
 
             t_event_record.clear()  # After putting text we wait for processor to signal us again
+
+        self._clean_up()
 
     def _record(self):
         frames = []
@@ -82,6 +91,9 @@ class AudioRecorder(threading.Thread):
 
         print('Recording...')
         for i in range(int(RATE / CHUNK * RECORD_SECONDS)):
+            if t_event_quit.is_set():
+                return []
+
             if not t_event_not_muted.is_set():
                 continue
 
@@ -108,7 +120,14 @@ class AudioRecorder(threading.Thread):
 
     def _is_silence(self, data):
         peak = np.average(np.abs(data)) * 2
-        return int(50 * peak / 2 ** 16) < 1
+        return 50 * peak / 2 ** 16 < 0.5
+
+    def _clean_up(self):
+        print('Cleaning up audio recorder')
+
+        self._stream.stop_stream()
+        self._stream.close()
+        self._audio.terminate()
 
     def run(self):
         self._loop()

@@ -31,8 +31,13 @@ def transcribe(file_path):
                                 temperature=(0.0, 0.2, 0.4, 0.6, 0.8, 1.0),
                                 **decode_options)
 
+    if len(result['segments']) < 1:
+        return ''
+
     # Hacky way to check if it's just noise. It's (for some reason) faster than passing the params to whisper.transcribe
     if result['segments'][0]['avg_logprob'] < -0.7 and result['segments'][0]['no_speech_prob'] > 0.6:
         return ''
+
+    print(result['text'])
 
     return result['text']

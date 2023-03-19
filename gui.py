@@ -3,8 +3,7 @@ import queue
 import PySimpleGUI as sg
 
 from screeninfo import get_monitors
-from global_vars import t_event_not_muted
-
+from global_vars import t_event_not_muted, t_event_quit
 
 WINDOW_SIZE = (300, 500)
 
@@ -29,7 +28,7 @@ class GUI:
 
         self._setup_binds()
 
-        while True:
+        while not t_event_quit.is_set():
             event, values = self._window.read(timeout=100)
 
             self._update()
@@ -45,7 +44,7 @@ class GUI:
                     self._window['-MIC-'].update('images/voice_on.png')
                     t_event_not_muted.set()
 
-        self._window.close()
+        self._clean_up()
 
     def _layout(self):
         image_column = [
@@ -79,3 +78,10 @@ class GUI:
         while not self._data_queue.empty():
             key, value = self._data_queue.get()
             self._window[key].update(value)
+
+    def _clean_up(self):
+        print('Cleaning up GUI')
+
+        t_event_quit.set()  # Let others know we're quitting
+
+        self._window.close()

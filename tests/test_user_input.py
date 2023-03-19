@@ -1,6 +1,6 @@
 import pytest
 
-from user_input.user_input import UserInput
+from input_handling.user_input import UserInput
 
 
 def test_user_input_empty_text():
@@ -9,7 +9,6 @@ def test_user_input_empty_text():
 
     assert user_input.raw_text == text
     assert user_input.text == ''
-    assert len(user_input.words) == 0
     assert len(user_input.commands) == 0
 
 
@@ -19,10 +18,9 @@ def test_user_input_single_word_single_command_text():
 
     assert user_input.raw_text == text
     assert user_input.text == 'create'
-    assert len(user_input.words) == 1
-    assert user_input.words[0] == 'create'
     assert len(user_input.commands) == 1
-    assert user_input.commands[0] == 'create'
+    assert len(user_input.commands[0]) == 1
+    assert user_input.commands[0][0] == 'create'
 
 
 def test_user_input_many_words_single_command_text():
@@ -31,12 +29,9 @@ def test_user_input_many_words_single_command_text():
 
     assert user_input.raw_text == text
     assert user_input.text == 'create a file'
-    assert len(user_input.words) == 3
-    assert user_input.words[0] == 'create'
-    assert user_input.words[1] == 'a'
-    assert user_input.words[2] == 'file'
     assert len(user_input.commands) == 1
-    assert user_input.commands[0] == 'create a file'
+    assert len(user_input.commands[0]) == 3
+    assert ' '.join(user_input.commands[0]) == 'create a file'
 
 
 def test_user_input_many_words_many_commands_text():
@@ -45,12 +40,11 @@ def test_user_input_many_words_many_commands_text():
 
     assert user_input.raw_text == text
     assert user_input.text == 'create a file. make it something.'
-    assert len(user_input.words) == 8  # Dots count as words
-    assert user_input.words[3] == '.'
-    assert user_input.words[7] == '.'
     assert len(user_input.commands) == 2
-    assert user_input.commands[0] == 'create a file'
-    assert user_input.commands[1] == 'make it something'
+    assert len(user_input.commands[0]) == 3
+    assert len(user_input.commands[1]) == 3
+    assert ' '.join(user_input.commands[0]) == 'create a file'
+    assert ' '.join(user_input.commands[1]) == 'make it something'
 
 
 def test_user_input_filter_dots():
@@ -60,10 +54,9 @@ def test_user_input_filter_dots():
 
     assert user_input.raw_text == text
     assert user_input.text == 'create file main.java.'
-    assert len(user_input.words) == 4
-    assert user_input.words[2] == 'main.java'
     assert len(user_input.commands) == 1
-    assert user_input.commands[0] == 'create file main.java'
+    assert len(user_input.commands[0]) == 3
+    assert ' '.join(user_input.commands[0]) == 'create file main.java'
 
     # No dots should be filtered here
     text = 'Create file main.java'
@@ -71,10 +64,9 @@ def test_user_input_filter_dots():
 
     assert user_input.raw_text == text
     assert user_input.text == 'create file main.java'
-    assert len(user_input.words) == 3
-    assert user_input.words[2] == 'main.java'
     assert len(user_input.commands) == 1
-    assert user_input.commands[0] == 'create file main.java'
+    assert len(user_input.commands[0]) == 3
+    assert ' '.join(user_input.commands[0]) == 'create file main.java'
 
 
 def test_user_input_remove_spaces():
@@ -83,6 +75,6 @@ def test_user_input_remove_spaces():
 
     assert user_input.raw_text == text
     assert user_input.text == 'create file main.java'
-    assert len(user_input.words) == 3
     assert len(user_input.commands) == 1
-    assert user_input.commands[0] == 'create file main.java'
+    assert len(user_input.commands[0]) == 3
+    assert ' '.join(user_input.commands[0]) == 'create file main.java'

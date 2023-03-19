@@ -1,4 +1,5 @@
+import abc
 
 
-class BaseEditor:
+class BaseEditor(abc.ABC):
     pass
