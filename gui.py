@@ -53,7 +53,11 @@ class GUI:
 
         layout = [
             [sg.Column(image_column, justification='center')],
-            [sg.Text('hello', key='-TRANSCRIBEDTEXT-', expand_x=False)]
+            [sg.Text('', key='-TRANSCRIBEDTEXT1-', expand_x=False)],
+            [sg.Text('', key='-TRANSCRIBEDTEXT2-', expand_x=False)],
+            [sg.Text('', key='-TRANSCRIBEDTEXT3-', expand_x=False)],
+            [sg.Text('', key='-TRANSCRIBEDTEXT4-', expand_x=False)],
+            [sg.Text('', key='-TRANSCRIBEDTEXT5-', expand_x=False)],
         ]
 
         return layout

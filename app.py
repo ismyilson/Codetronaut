@@ -36,6 +36,7 @@ class App:
         self._audio_recorder.start()
         self._processor.start()
 
+        # Set threading events
         t_event_record.set()
         t_event_not_muted.set()
 

@@ -17,7 +17,7 @@ RATE = 48000
 CHUNK = 512
 RECORD_SECONDS = 30
 
-MAX_RETRIES = 100
+MAX_RETRIES = 250
 
 
 @contextmanager
@@ -57,7 +57,10 @@ class AudioRecorder(threading.Thread):
     def _loop(self):
         while not t_event_quit.is_set():
             t_event_record.wait()
-            t_event_not_muted.wait()
+            t_event_not_muted.wait(timeout=0.5)
+
+            if not t_event_not_muted.is_set():
+                continue
 
             frames = self._record()
 

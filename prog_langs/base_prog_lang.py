@@ -2,4 +2,7 @@ import abc
 
 
 class BaseProgrammingLanguage(abc.ABC):
-    pass
+    identifiers: list[str]
+    name: str
+
+    extensions: list[str]
