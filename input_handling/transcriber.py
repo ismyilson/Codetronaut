@@ -38,6 +38,4 @@ def transcribe(file_path):
     if result['segments'][0]['avg_logprob'] < -0.7 and result['segments'][0]['no_speech_prob'] > 0.6:
         return ''
 
-    print(result['text'])
-
     return result['text']

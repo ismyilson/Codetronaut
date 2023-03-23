@@ -8,8 +8,6 @@ _voices = _engine.getProperty('voices')
 _engine.setProperty('voice', _voices[1].id)
 
 
-def read_text(text, wait=True):
+def read_text(text):
     _engine.say(text)
-
-    if wait:
-        _engine.runAndWait()
+    _engine.runAndWait()

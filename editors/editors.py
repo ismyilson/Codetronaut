@@ -18,3 +18,15 @@ class EditorVisualStudioCode(BaseEditor):
 
         pyautogui.write(file)
         pyautogui.press('enter')
+
+    def go_to_line(self, line, col=10000):
+        line = str(line)
+        col = str(col)
+
+        pyautogui.hotkey('ctrl', 'g')
+
+        pyautogui.write(f'{line}:{col}')
+        pyautogui.press('enter')
+
+    def save_file(self):
+        pyautogui.hotkey('ctrl', 's')

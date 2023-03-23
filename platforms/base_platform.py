@@ -37,7 +37,13 @@ class BasePlatform(abc.ABC):
         f = open(path, 'x')
         f.close()
 
-    def write_to_file(self, path, data, to_json=False):
+    def file_exists(self, file_name, root_dir=''):
+        path = os.path.join(root_dir, file_name)
+        path = os.path.expandvars(path)
+
+        return os.path.isfile(path)
+
+    def write_file(self, path, data, to_json=False):
         path = os.path.expandvars(path)
 
         self.create_directories_to_file(path)
@@ -48,7 +54,7 @@ class BasePlatform(abc.ABC):
             else:
                 file.write(data)
 
-    def read_from_file(self, path, is_json=False):
+    def read_file(self, path, is_json=False):
         path = os.path.expandvars(path)
 
         with open(path, 'r' if is_json else 'rb') as file:
@@ -76,6 +82,13 @@ class BasePlatform(abc.ABC):
                 files.append(os.path.splitext(p))
 
         return files
+
+    def get_file_lines(self, file):
+        with open(file, 'r') as f:
+            return f.readlines()
+
+    def get_file_line_count(self, file):
+        return sum(1 for line in open(file, 'r'))
 
     def get_install_path(self, name):
         pass

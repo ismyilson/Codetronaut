@@ -14,6 +14,9 @@ class BaseCommand(abc.ABC):
         pass
 
     def set_modifiers(self, context, modifiers):
+        if len(modifiers) < 1:
+            return False
+
         valid_modifiers = self._valid_modifiers(context, modifiers)
 
         if len(valid_modifiers) < 1:
@@ -24,6 +27,9 @@ class BaseCommand(abc.ABC):
 
     def _valid_modifiers(self, context, modifiers):
         return []
+
+    def validate_params(self, context):
+        return True
 
     def set_params(self, context, params):
         valid_params = self._valid_params(context, params)

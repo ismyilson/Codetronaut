@@ -26,8 +26,10 @@ class PlatformWindows(BasePlatform):
     def focus(self, pid):
         hwnds = self._get_hwnds_for_pid(pid)
 
-        for hwnd in hwnds:
-            win32gui.SendMessage(hwnd, win32con.WM_ACTIVATE, win32con.WA_ACTIVE, 0)
+        if len(hwnds) < 1:
+            return
+
+        win32gui.SetForegroundWindow(hwnds[0])
 
     def _get_hwnds_for_pid(self, pid):
         def callback(hwnd, hwnds):

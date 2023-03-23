@@ -5,12 +5,15 @@ from queue import Queue, Empty
 from commands.action import Action, ActionStatus
 from commands.commands import get_commands
 
-from context import Context
+from processing.context import Context
+from processing.memory import Memory
+
 from global_vars import t_event_record, t_event_quit
 
 
 class Processor(threading.Thread):
     context: Context
+    memory: Memory
 
     _queue: Queue
     _gui_data_queue: Queue
@@ -47,6 +50,10 @@ class Processor(threading.Thread):
         actions = []
         for command_words in user_input.commands:
             action = self._process_new_command_text(command_words)
+
+            if action.status == ActionStatus.READY:
+                self.memory.set_last_subject(action)
+
             actions.append(action)
 
         for action in actions:
@@ -54,6 +61,8 @@ class Processor(threading.Thread):
 
     def _process_new_command_text(self, command_words):
         print(f'Attempting to process: {command_words}')
+
+        command_words = self.memory.replace_subject(command_words)
 
         main_cmd, main_cmd_idx = self._get_main_command(command_words)
 
@@ -77,9 +86,9 @@ class Processor(threading.Thread):
         return self._handle_command(sub_cmd, command_words, main_cmd_idx, sub_cmd_idx)
 
     def _get_main_command(self, command_words):
-        for main_command in self._commands:
-            for mc_text in main_command.cmd:
-                for idx, cmd_word in enumerate(command_words):
+        for idx, cmd_word in enumerate(command_words):
+            for main_command in self._commands:
+                for mc_text in main_command.cmd:
                     if cmd_word == mc_text:
                         return main_command(), idx
 
@@ -94,21 +103,24 @@ class Processor(threading.Thread):
 
         return None, -1
 
-    def _handle_command(self, command, command_words, first_index, last_index):
+    def _handle_command(self, command, command_words, main_cmd_idx, sub_cmd_idx):
         # First grab modifiers
-        if first_index == last_index:
-            command.set_modifiers(self.context, command_words[:first_index])
-        else:
-            command.set_modifiers(self.context, command_words[first_index+1:last_index])
+        from_idx = 0
+        if main_cmd_idx != sub_cmd_idx:
+            from_idx = main_cmd_idx + 1
+
+        if not command.set_modifiers(self.context, command_words[from_idx:sub_cmd_idx]):
+            if command.requires_modifiers:
+                return Action(ActionStatus.MISSING_MODIFIERS, command)
 
         # Then grab params
-        if last_index == len(command_words) - 1:
+        if sub_cmd_idx == len(command_words) - 1:
             if command.requires_params:
                 return Action(ActionStatus.MISSING_DATA, command)
 
             return Action(ActionStatus.READY, command)
 
-        params = command_words[last_index+1:]
+        params = command_words[sub_cmd_idx + 1:]
         if not command.set_params(self.context, params):
             return Action(ActionStatus.INVALID_DATA, command)
 
@@ -131,8 +143,17 @@ class Processor(threading.Thread):
             print(f'Invalid data')
             return
 
+        if action.status == ActionStatus.MISSING_MODIFIERS:
+            print(f'Missing modifiers')
+            return
+
         if action.status == ActionStatus.READY:
             print(f'Executing command with params: {action.command.params}')
+
+            if not action.command.validate_params(self.context):
+                print(f'Cant validate params: {action.command.cmd[0]} {action.command.params}')
+                return
+
             action.command.execute(self.context)
             return
 
@@ -142,5 +163,7 @@ class Processor(threading.Thread):
 
         self.context = Context()
         self.context.load_config()
+
+        self.memory = Memory()
 
         self._loop()

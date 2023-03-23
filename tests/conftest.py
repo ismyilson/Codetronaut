@@ -2,8 +2,8 @@ import pytest
 
 import queue
 
-from processor import Processor
-from context import Context
+from processing.processor import Processor
+from processing.context import Context
 
 
 @pytest.fixture

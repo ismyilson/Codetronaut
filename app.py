@@ -2,8 +2,8 @@ import queue
 
 from input_handling.audio_recorder import AudioRecorder
 from global_vars import t_event_record, t_event_not_muted
-from processor import Processor
-from gui import GUI
+from processing.processor import Processor
+from ui.gui import GUI
 
 
 class App:

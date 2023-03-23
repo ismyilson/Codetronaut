@@ -18,12 +18,11 @@ class GUI:
         self._data_queue = data_queue
 
     def start(self):
-        self._window = sg.Window('Voice2Code',
+        self._window = sg.Window('Codetronaut',
                                  layout=self._layout(),
                                  size=WINDOW_SIZE,
                                  location=self._make_window_location(),
                                  keep_on_top=True,
-                                 # grab_anywhere=True,
                                  finalize=True)
 
         self._setup_binds()
@@ -38,26 +37,26 @@ class GUI:
 
             if event == '<SPACEBAR>':
                 if t_event_not_muted.is_set():
-                    self._window['-MIC-'].update('images/voice_off.png')
+                    self._window['-MIC-'].update('ui/images/voice_off.png')
                     t_event_not_muted.clear()
                 else:
-                    self._window['-MIC-'].update('images/voice_on.png')
+                    self._window['-MIC-'].update('ui/images/voice_on.png')
                     t_event_not_muted.set()
 
         self._clean_up()
 
     def _layout(self):
         image_column = [
-            [sg.Image('images/voice_on.png', key='-MIC-')]
+            [sg.Image('ui/images/voice_on.png', key='-MIC-')]
         ]
 
         layout = [
             [sg.Column(image_column, justification='center')],
-            [sg.Text('', key='-TRANSCRIBEDTEXT1-', expand_x=False)],
-            [sg.Text('', key='-TRANSCRIBEDTEXT2-', expand_x=False)],
-            [sg.Text('', key='-TRANSCRIBEDTEXT3-', expand_x=False)],
-            [sg.Text('', key='-TRANSCRIBEDTEXT4-', expand_x=False)],
-            [sg.Text('', key='-TRANSCRIBEDTEXT5-', expand_x=False)],
+            [sg.Text('a', key='-TRANSCRIBEDTEXT1-', expand_x=False)],
+            [sg.Text('b', key='-TRANSCRIBEDTEXT2-', expand_x=False)],
+            [sg.Text('c', key='-TRANSCRIBEDTEXT3-', expand_x=False)],
+            [sg.Text('d', key='-TRANSCRIBEDTEXT4-', expand_x=False)],
+            [sg.Text('e', key='-TRANSCRIBEDTEXT5-', expand_x=False)],
         ]
 
         return layout
@@ -86,6 +85,6 @@ class GUI:
     def _clean_up(self):
         print('Cleaning up GUI')
 
-        t_event_quit.set()  # Let others know we're quitting
+        t_event_quit.set()
 
         self._window.close()

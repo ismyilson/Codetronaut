@@ -7,6 +7,7 @@ class ActionStatus:
     INVALID_SUBCOMMAND = 'invalid_subcommand'
     MISSING_DATA = 'missing_data'
     INVALID_DATA = 'invalid_data'
+    MISSING_MODIFIERS = 'missing_modifiers'
 
 
 class Action:

@@ -26,7 +26,7 @@ class UserInput:
     def _make_sanitized_text(self, text):
         text = text.lower()
         text = text.strip()
-        text = text.replace('!', '').replace('?', '')
+        text = text.replace('!', '').replace('?', '').replace(',', '')
 
         return text
 
@@ -34,10 +34,10 @@ class UserInput:
         words = self.text.split(' ')
 
         to_insert = []
-        for i in range(0, len(words)):
-            if words[i][-1] == '.':
-                words[i] = words[i][:-1]
-                to_insert.append(i + 1 + len(to_insert))
+        for idx, word in enumerate(words):
+            if word[-1] == '.':
+                words[idx] = word[:-1]
+                to_insert.append(idx + 1 + len(to_insert))
 
         for idx in to_insert:
             words.insert(idx, '.')
@@ -49,10 +49,10 @@ class UserInput:
         commands = []
 
         last_idx = 0
-        for i in range(0, len(words)):
-            if words[i] == '.':
-                commands.append(words[last_idx:i])
-                last_idx = i + 1
+        for idx, word in enumerate(words):
+            if word == '.' or word == 'and':
+                commands.append(words[last_idx:idx])
+                last_idx = idx + 1
 
         if last_idx != len(words):
             commands.append(words[last_idx:])

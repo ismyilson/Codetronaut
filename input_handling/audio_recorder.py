@@ -5,7 +5,7 @@ import threading
 import wave
 import pyaudio
 import numpy as np
-import transcriber
+from input_handling import transcriber
 
 from contextlib import contextmanager
 from global_vars import t_event_record, t_event_not_muted, t_event_quit
@@ -17,7 +17,7 @@ RATE = 48000
 CHUNK = 512
 RECORD_SECONDS = 30
 
-MAX_RETRIES = 250
+MAX_RETRIES = 200
 
 
 @contextmanager
@@ -114,7 +114,7 @@ class AudioRecorder(threading.Thread):
             if retries >= MAX_RETRIES and not just_started:
                 break
 
-            print(f'Appending {data}')
+            print(f'Appending data')
             frames.append(data)
         print('Recording stop')
 

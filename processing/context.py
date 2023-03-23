@@ -8,7 +8,7 @@ from editors.editors import get_editors
 from platforms.base_platform import BasePlatform, UnsupportedPlatform
 from platforms.platforms import get_platforms
 
-from prog_langs.base_prog_lang import BaseProgrammingLanguage
+from prog_langs.base_prog_lang import BaseProgrammingLanguage, UnsupportedProgrammingLanguage
 from prog_langs.prog_langs import get_prog_langs
 
 CONTEXT_SAVE_PATH = r'%LOCALAPPDATA%\Codetronaut\context.json'
@@ -16,10 +16,15 @@ CONTEXT_SAVE_PATH = r'%LOCALAPPDATA%\Codetronaut\context.json'
 
 class Context:
     _platform: BasePlatform
-    _editor: BaseEditor
+    _editor_: BaseEditor
     _prog_lang: BaseProgrammingLanguage
 
     workdir: str = ''
+
+    _current_file: str = ''
+    current_file_lines: list[str] = []
+
+    current_line: int = 1
 
     _editor_pid: int = -1
 
@@ -28,7 +33,7 @@ class Context:
 
     def __init__(self):
         self._platform = None
-        self._editor = None
+        self._editor_ = None
         self._prog_lang = None
 
         self._get_platform()
@@ -39,27 +44,54 @@ class Context:
     ##########################################
     #                 Internal               #
     ##########################################
+    @property
+    def _editor(self):
+        self._platform.focus(self._editor_pid)
+        return self._editor_
+
+    @_editor.setter
+    def _editor(self, value):
+        self._editor_ = value
+
+    @property
+    def current_file(self):
+        return f'{self.workdir}{self._current_file}'
+
+    @current_file.setter
+    def current_file(self, value):
+        self._current_file = value
+
     def save_config(self):
         config = {
             'workdir': self.workdir if self.workdir else '',
+            'current_file': self._current_file if self._current_file else '',
             'editor': self._editor.identifiers[0] if self._editor else '',
+            'current_line': self.current_line
         }
 
-        self._platform.write_to_file(CONTEXT_SAVE_PATH, config, to_json=True)
+        self._platform.write_file(CONTEXT_SAVE_PATH, config, to_json=True)
 
     def load_config(self):
-        config = self._platform.read_from_file(CONTEXT_SAVE_PATH, is_json=True)
+        config = self._platform.read_file(CONTEXT_SAVE_PATH, is_json=True)
 
-        if config['editor'] != '':
-            self.set_editor(config['editor'])
+        editor_name = config.get('editor', None)
+        self.set_editor(editor_name)
 
-        if config['workdir'] != '':
-            self.set_workdir(config['workdir'])
+        workdir = config.get('workdir', None)
+        self.set_workdir(workdir)
+
+        current_file = config.get('current_file', '')
+        self.set_current_file(current_file)
+
+        current_line = config.get('current_line', '')
+        self.current_line = current_line
 
     def clean_up(self):
-        self.close_editor()
+        self.save_open_file()
 
         self.save_config()
+
+        self.close_editor()
 
     def _get_platform(self):
         platform_class = None
@@ -72,7 +104,7 @@ class Context:
                 break
 
         if platform_class is None:
-            raise UnsupportedPlatform(f'{os_name} is not a supported platform')
+            raise UnsupportedPlatform(f'"{os_name}" is not a supported platform')
 
         self._platform = platform_class()
 
@@ -83,10 +115,39 @@ class Context:
         self._available_langs = get_prog_langs()
 
     def set_workdir(self, path):
-        self.workdir = path.replace('/', '\\')
+        if path is None:
+            return
+
+        path = path.replace('/', '\\')
+        if path[-1] != '\\':
+            path += '\\'
+
+        self.workdir = path
 
         self.close_editor()
         self.start_editor()
+
+    def set_current_file(self, file):
+        self.current_file = file
+        self.current_line = 1
+
+        self.current_file_lines = self._platform.get_file_lines(self.current_file)
+
+        prog_lang_class = self.get_prog_lang_by_file_ext(file[file.rfind('.'):])
+
+        if prog_lang_class is None:
+            print(f'"{file}" is not part of a supported programming language')
+            self._prog_lang = None
+            return
+
+        if type(self._prog_lang) is not prog_lang_class:
+            self._prog_lang = prog_lang_class()
+
+            print(f'Prog lang set to {self._prog_lang.name}')
+
+    def save_open_file(self):
+        self._editor.save_file()
+        self.current_file_lines = self._platform.get_file_lines(self.current_file)
 
     ##########################################
     #                 Editor                 #
@@ -115,6 +176,9 @@ class Context:
         self._editor_pid = -1
 
     def set_editor(self, name):
+        if name is None:
+            return
+
         editor_class = None
         for editor in self._available_editors:
             if name in editor.identifiers:
@@ -122,7 +186,7 @@ class Context:
                 break
 
         if editor_class is None:
-            raise UnsupportedEditor(f'{name} is not a supported editor')
+            raise UnsupportedEditor(f'"{name}" is not a supported editor')
 
         self._editor = editor_class()
         reader.read_text(f'Editor set to {self._editor.name}')
@@ -137,6 +201,28 @@ class Context:
     def go_to_file(self, name):
         self._editor.go_to_file(name)
 
+        self.set_current_file(name)
+
+    def go_to_line(self, line):
+        self._editor.go_to_line(line)
+
+        self.current_line = int(line)
+
+    def go_to_variable(self, name):
+        line = self._prog_lang.find_variable(self.current_file_lines, name)
+        self.go_to_line(line)
+
+        return line
+
+    def next_available_line(self, create_line=True):
+        if self.current_file_lines[self.current_line - 1].strip() == '':
+            return self.current_line
+
+        if create_line:
+            self._editor.new_line()
+
+        return self.current_line + 1
+
     ##########################################
     #               Prog Langs               #
     ##########################################
@@ -147,6 +233,41 @@ class Context:
 
         return None
 
+    def get_prog_lang_by_file_ext(self, ext):
+        for lang in self._available_langs:
+            if ext in lang.extensions:
+                return lang
+
+        return None
+
+    def create_class(self, name):
+        end_line = self._prog_lang.create_class(name)
+
+        self.go_to_line(self.current_line + end_line)
+
+        self.save_open_file()
+
+    def create_variable(self, var_type, var_name):
+        next_available_line = self.next_available_line()
+        if next_available_line != self.current_line:
+            self.go_to_line(next_available_line)
+
+        end_line = self._prog_lang.create_variable(var_type, var_name)
+
+        self.go_to_line(self.current_line + end_line)
+
+        self.save_open_file()
+
+    def set_variable(self, var_name, var_value):
+        line_idx = self.go_to_variable(var_name)
+        line = self.current_file_lines[line_idx - 1].strip()
+
+        end_line = self._prog_lang.set_variable(line, var_name, var_value)
+
+        self.go_to_line(self.current_line + end_line)
+
+        self.save_open_file()
+
     ##########################################
     #                 Platform               #
     ##########################################
@@ -155,3 +276,9 @@ class Context:
 
     def create_file(self, name):
         self._platform.create_file(name, root_dir=self.workdir)
+
+    def file_exists(self, name):
+        return self._platform.file_exists(name, root_dir=self.workdir)
+
+    def get_current_file_line_count(self):
+        return len(self.current_file_lines)
