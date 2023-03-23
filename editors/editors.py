@@ -30,3 +30,6 @@ class EditorVisualStudioCode(BaseEditor):
 
     def save_file(self):
         pyautogui.hotkey('ctrl', 's')
+
+    def save_all_files(self):
+        pyautogui.hotkey('ctrl', 'shift', 's')

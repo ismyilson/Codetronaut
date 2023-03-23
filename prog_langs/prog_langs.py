@@ -1,5 +1,4 @@
-import pyautogui
-import pyperclip
+import keyboard
 
 from prog_langs.base_prog_lang import BaseProgrammingLanguage
 
@@ -15,16 +14,22 @@ class ProgrammingLanguageJava(BaseProgrammingLanguage):
     requires_semicolon = True
 
     def create_class(self, name):
-        code = f'public class {name} {{\n\t\n}}'
-        pyperclip.copy(code)
-        pyautogui.hotkey('ctrl', 'v')
+        code = f'public class {name} {{}}'
+        self._write_code(code, False)
 
-        return 1  # end line
+        return 1
+
+    def create_method(self, name, access_type, is_static, ret_type):
+        code = f'{access_type} '
+        code += 'static ' if is_static else ''
+        code += f'{ret_type} {name}() {{}}'
+        self._write_code(code, False)
+
+        return 1
 
     def create_variable(self, var_type, var_name):
-        code = f'{var_type} {var_name}' + ';' if self.requires_semicolon else ''
-        pyperclip.copy(code)
-        pyautogui.hotkey('ctrl', 'v')
+        code = f'{var_type} {var_name}'
+        self._write_code(code, True)
 
         return 0
 
@@ -34,21 +39,19 @@ class ProgrammingLanguageJava(BaseProgrammingLanguage):
         new_line = None
         for idx, word in enumerate(line_words):
             if word == f'{var_name};':
-                new_line = line[:-1] + f' = {var_value};'
+                new_line = line[:-1] + f' = {var_value}'
                 break
 
             if word == '=':
-                new_line = ' '.join(line_words[:idx + 1]) + f' {var_value};'
+                new_line = ' '.join(line_words[:idx + 1]) + f' {var_value}'
                 break
 
         if new_line is None:
             print(f'Could not set variable {var_name} to {var_value}')
             return 0
 
-        pyperclip.copy(new_line + '\n')
-        pyautogui.hotkey('ctrl', 'l')
-
-        pyautogui.hotkey('ctrl', 'v')
+        keyboard.press_and_release('ctrl+l')
+        self._write_code(new_line, True)
 
         return 0
 

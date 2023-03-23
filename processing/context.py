@@ -1,4 +1,5 @@
 import platform
+import time
 
 import reader
 
@@ -87,6 +88,7 @@ class Context:
         self.current_line = current_line
 
     def clean_up(self):
+        self.save_all_files()
         self.save_open_file()
 
         self.save_config()
@@ -147,6 +149,10 @@ class Context:
 
     def save_open_file(self):
         self._editor.save_file()
+        self.current_file_lines = self._platform.get_file_lines(self.current_file)
+
+    def save_all_files(self):
+        self._editor.save_all_files()
         self.current_file_lines = self._platform.get_file_lines(self.current_file)
 
     ##########################################
@@ -214,6 +220,12 @@ class Context:
 
         return line
 
+    def go_to_next_available_line(self, create_line=True):
+        line = self.next_available_line(create_line)
+
+        if self.current_line != line:
+            self.go_to_line(line)
+
     def next_available_line(self, create_line=True):
         if self.current_file_lines[self.current_line - 1].strip() == '':
             return self.current_line
@@ -247,10 +259,17 @@ class Context:
 
         self.save_open_file()
 
+    def create_method(self, name, access_type, is_static, ret_type):
+        self.go_to_next_available_line()
+
+        end_line = self._prog_lang.create_method(name, access_type, is_static, ret_type)
+
+        self.go_to_line(self.current_line + end_line)
+
+        self.save_open_file()
+
     def create_variable(self, var_type, var_name):
-        next_available_line = self.next_available_line()
-        if next_available_line != self.current_line:
-            self.go_to_line(next_available_line)
+        self.go_to_next_available_line()
 
         end_line = self._prog_lang.create_variable(var_type, var_name)
 
@@ -276,6 +295,10 @@ class Context:
 
     def create_file(self, name):
         self._platform.create_file(name, root_dir=self.workdir)
+
+        time.sleep(0.5)
+
+        self.go_to_file(name)
 
     def file_exists(self, name):
         return self._platform.file_exists(name, root_dir=self.workdir)

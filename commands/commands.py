@@ -237,6 +237,46 @@ class SubcommandCreateVariable(SubCommand):
         return [var_type]
 
 
+class SubcommandCreateMethod(SubCommand):
+    cmd = ['method', 'function']
+
+    requires_params = True
+    requires_modifiers = False
+
+    _func_data: dict
+
+    def execute(self, context):
+        context.create_method(self.params[0], self._func_data['access_type'], self._func_data['is_static'], self._func_data['ret_type'])
+
+    def validate_params(self, context):
+        self._func_data = {
+            'access_type': 'public',
+            'is_static': False,
+            'ret_type': 'void',
+        }
+
+        for mod in self.modifiers:
+            if mod in ['public', 'private', 'protected']:
+                self._func_data['access_type'] = mod
+            elif mod in ['static']:
+                self._func_data['is_static'] = True
+            elif mod in ['void', 'int', 'string']:
+                self._func_data['ret_type'] = mod
+
+        return True
+
+    def _valid_params(self, context, params):
+        method_name = ''.join([param.title() for param in params])
+
+        if method_name == '':
+            return []
+
+        return [method_name]
+
+    def _valid_modifiers(self, context, modifiers):
+        return modifiers
+
+
 class CommandCreate(MainCommand):
     cmd = ['create']
 
@@ -245,7 +285,8 @@ class CommandCreate(MainCommand):
     subcommands = [
         SubcommandCreateFile,
         SubcommandCreateClass,
-        SubcommandCreateVariable
+        SubcommandCreateVariable,
+        SubcommandCreateMethod
     ]
 
 

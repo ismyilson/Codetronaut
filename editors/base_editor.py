@@ -24,3 +24,6 @@ class BaseEditor(abc.ABC):
 
     def save_file(self):
         pass
+
+    def save_all_files(self):
+        pass
