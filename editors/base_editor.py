@@ -1,6 +1,6 @@
 import abc
 
-import pyautogui
+import writer as wr
 
 
 class UnsupportedEditor(Exception):
@@ -14,7 +14,11 @@ class BaseEditor(abc.ABC):
     exe_name: str
 
     def new_line(self):
-        pyautogui.press('enter')
+        writer = wr.Writer()
+
+        writer.add_hotkey('enter')
+
+        writer.execute()
 
     def go_to_file(self, file):
         pass
@@ -26,4 +30,7 @@ class BaseEditor(abc.ABC):
         pass
 
     def save_all_files(self):
+        pass
+
+    def delete_lines(self, line_start, line_end):
         pass

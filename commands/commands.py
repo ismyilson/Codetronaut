@@ -300,7 +300,7 @@ class SubcommandGoLine(SubCommand):
 
     def validate_params(self, context):
         if len(self.params) < 1:
-            return True
+            return False
 
         if int(self.params[0]) > context.get_current_file_line_count():
             return False
@@ -331,4 +331,56 @@ class CommandGo(MainCommand):
     subcommands = [
         SubcommandGoLine,
         SubcommandGoFile,
+    ]
+
+
+class SubcommandDeleteLine(SubCommand):
+    cmd = ['line', 'lines']
+
+    requires_params = False
+
+    def execute(self, context):
+        line_start = -1
+        line_end = -1
+
+        if len(self.params) == 1:
+            line_start = self.params[0]
+        elif len(self.params) > 1:
+            line_start = self.params[0]
+            line_end = self.params[1]
+
+        context.delete_lines(line_start, line_end)
+
+    def validate_params(self, context):
+        return True
+
+    def _valid_params(self, context, params):
+        if len(params) == 1:
+            return [params[0]]
+
+        line_start = ''
+        line_end = ''
+
+        switch = False
+        for param in params:
+            if param.isnumeric():
+                if switch:
+                    line_end += param
+                else:
+                    line_start += param
+            else:
+                if param == 'to' or param == 'through':
+                    switch = True
+                    continue
+
+        return [line_start, line_end]
+
+
+class CommandDelete(MainCommand):
+    cmd = ['delete']
+
+    requires_subcommand = True
+
+    subcommands = [
+        SubcommandDeleteLine
     ]

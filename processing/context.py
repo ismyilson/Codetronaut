@@ -149,10 +149,12 @@ class Context:
 
     def save_open_file(self):
         self._editor.save_file()
+        time.sleep(0.5)
         self.current_file_lines = self._platform.get_file_lines(self.current_file)
 
     def save_all_files(self):
         self._editor.save_all_files()
+        time.sleep(0.5)
         self.current_file_lines = self._platform.get_file_lines(self.current_file)
 
     ##########################################
@@ -227,13 +229,17 @@ class Context:
             self.go_to_line(line)
 
     def next_available_line(self, create_line=True):
-        if self.current_file_lines[self.current_line - 1].strip() == '':
+        if self.current_file_lines[self.current_line - 1].strip() == ''\
+                or self.current_file_lines[self.current_line - 1].strip() == '\n':
             return self.current_line
 
         if create_line:
             self._editor.new_line()
 
         return self.current_line + 1
+
+    def delete_lines(self, line_start, line_end):
+        self._editor.delete_lines(line_start, line_end)
 
     ##########################################
     #               Prog Langs               #
@@ -296,7 +302,7 @@ class Context:
     def create_file(self, name):
         self._platform.create_file(name, root_dir=self.workdir)
 
-        time.sleep(0.5)
+        time.sleep(1)  # Updating new files in IDEs and stuff requires bit of time
 
         self.go_to_file(name)
 

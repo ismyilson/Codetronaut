@@ -29,7 +29,7 @@ class ProgrammingLanguageJava(BaseProgrammingLanguage):
 
     def create_variable(self, var_type, var_name):
         code = f'{var_type} {var_name}'
-        self._write_code(code, True)
+        self._write_code(code, True, False)
 
         return 0
 

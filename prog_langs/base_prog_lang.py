@@ -1,6 +1,6 @@
 import abc
 
-import keyboard
+import writer as wr
 
 
 class UnsupportedProgrammingLanguage(Exception):
@@ -31,20 +31,29 @@ class BaseProgrammingLanguage(abc.ABC):
     def find_variable(self, lines, var_name):
         pass
 
-    def _write_code(self, code, add_semicolon):
+    def _write_code(self, code, add_semicolon, add_extra_blank=True):
         code_lines = code.split('\n')
+        added_lines = 0
 
+        writer = wr.Writer()
         for line in code_lines:
             for word in line:
-                keyboard.write(word)
+                writer.add_text(word)
 
                 if word == '}':
-                    keyboard.press('left arrow, return')
+                    writer.add_hotkey('left arrow')
 
             if line != code_lines[-1]:
-                keyboard.press('return')
+                writer.add_hotkey('enter')
+                added_lines += 1
 
         if add_semicolon and self.requires_semicolon:
-            keyboard.write(';')
+            writer.add_text(';')
 
-        keyboard.press('intro')
+        if add_extra_blank:
+            writer.add_hotkey('enter')
+            added_lines += 1
+
+        writer.execute()
+
+        return added_lines

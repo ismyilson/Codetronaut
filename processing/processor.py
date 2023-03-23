@@ -1,4 +1,5 @@
 import threading
+import time
 
 from queue import Queue, Empty
 
@@ -58,6 +59,7 @@ class Processor(threading.Thread):
 
         for action in actions:
             self._process_action(action)
+            time.sleep(0.3)
 
     def _process_new_command_text(self, command_words):
         print(f'Attempting to process: {command_words}')

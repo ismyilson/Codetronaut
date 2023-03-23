@@ -1,4 +1,4 @@
-import pyautogui
+import writer as wr
 
 from editors.base_editor import BaseEditor
 from utils import get_classes_in_module
@@ -14,22 +14,43 @@ class EditorVisualStudioCode(BaseEditor):
     exe_name = 'Code.exe'
 
     def go_to_file(self, file):
-        pyautogui.hotkey('ctrl', 'p')
+        writer = wr.Writer()
 
-        pyautogui.write(file)
-        pyautogui.press('enter')
+        writer.add_hotkey('ctrl+p')
+        writer.add_text(file)
+        writer.add_hotkey('enter')
+
+        writer.execute()
 
     def go_to_line(self, line, col=10000):
         line = str(line)
         col = str(col)
 
-        pyautogui.hotkey('ctrl', 'g')
+        writer = wr.Writer()
 
-        pyautogui.write(f'{line}:{col}')
-        pyautogui.press('enter')
+        writer.add_hotkey('ctrl+g')
+        writer.add_text(f'{line}:{col}')
+        writer.add_hotkey('enter')
+
+        writer.execute()
 
     def save_file(self):
-        pyautogui.hotkey('ctrl', 's')
+        writer = wr.Writer()
+
+        writer.add_hotkey('ctrl+s')
+
+        writer.execute()
 
     def save_all_files(self):
-        pyautogui.hotkey('ctrl', 'shift', 's')
+        writer = wr.Writer()
+
+        writer.add_hotkey('ctrl+k')
+        writer.add_hotkey('s')
+
+        writer.execute()
+
+    def delete_lines(self, line_start, line_end):
+        line_start = str(line_start)
+        line_end = str(line_end)
+
+
