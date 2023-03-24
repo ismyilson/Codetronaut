@@ -295,15 +295,25 @@ class Context:
 
         self.save_open_file()
 
-    def set_variable(self, var_name, var_value):
+    def set_variable_initial_value(self, var_name, var_value):
         line_idx = self.go_to_variable(var_name)
         line = self.current_file_lines[line_idx - 1]
 
-        end_line = self._prog_lang.set_variable(line, var_name, var_value)
+        end_line = self._prog_lang.set_variable_initial_value(line, var_name, var_value)
 
         self.go_to_line(self.current_line + end_line)
 
         self.save_open_file()
+
+    def set_variable(self, var_name, var_value):
+        self.go_to_next_available_line()
+
+        end_line = self._prog_lang.set_variable(var_name, var_value)
+
+        self.save_open_file()
+
+    def add_if_condition(self, first_part, operation, second_part):
+        self._prog_lang.add_if_condition(first_part, operation, second_part)
 
     ##########################################
     #                 Platform               #

@@ -73,9 +73,18 @@ class SubcommandSetVariable(SubCommand):
     requires_params = True
 
     def execute(self, context):
-        context.set_variable(self.params[0], self.params[1])
+        if self.params[2]:
+            context.set_variable_initial_value(self.params[0], self.params[1])
+        else:
+            context.set_variable(self.params[0], self.params[1])
 
     def _valid_params(self, context, params):
+        initial_value = False
+        if 'initial' in params and 'value' in params:
+            initial_value = True
+            params.remove('initial')
+            params.remove('value')
+
         try:
             idx = params.index('to')
         except ValueError:
@@ -84,7 +93,7 @@ class SubcommandSetVariable(SubCommand):
         var_name = ''.join(params[:idx])
         var_value = ''.join(params[idx+1:])
 
-        return [var_name, var_value]
+        return [var_name, var_value, initial_value]
 
 
 class CommandSet(MainCommand):
@@ -433,3 +442,62 @@ class CommandRename(MainCommand):
     subcommands = [
         SubcommandRenameVariable
     ]
+
+
+class CommandIf(MainCommand):
+    cmd = ['if']
+
+    requires_subcommand = False
+
+    requires_params = True
+
+    def execute(self, context):
+        context.add_if_condition(self.params[0], self.params[1], self.params[2])
+
+    def _valid_params(self, context, params):
+        valid_params = self._parse_if_condition(params)
+        return valid_params
+
+    def _parse_if_condition(self, params):
+        # If test is greater than 5
+        # If 5 is greater than test
+        complete_sentence = ' '.join(params)
+
+        operations = {
+            'is greater than': '>',
+            'is greater or equal to': '>=',
+            'is less than': '<',
+            'is less or equal to': '<=',
+            'is equal to': '==',
+            'is true': 'true',
+            'is false': 'false'
+        }
+
+        idx_start = -1
+        idx_end = -1
+        operation = None
+        for special in operations.keys():
+            if special in complete_sentence:
+                idx_start = complete_sentence.index(special)
+                idx_end = idx_start + len(special) + 1
+                operation = special
+                print(f'Found: {special} at idx: {idx_start}, ending at {idx_end}')
+                break
+
+        if idx_start == -1:
+            print('Not found')
+            return
+
+        operation = operations.get(operation)
+
+        first_param = complete_sentence[:idx_start].replace(' ', '')
+        second_param = complete_sentence[idx_end:].replace(' ', '')
+
+        if operation == 'true':
+            operation = '=='
+            second_param = 'true'
+        elif operation == 'false':
+            operation = '=='
+            second_param = 'false'
+
+        return [first_param, operation, second_param]

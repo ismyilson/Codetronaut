@@ -33,7 +33,7 @@ class ProgrammingLanguageJava(BaseProgrammingLanguage):
 
         return 0
 
-    def set_variable(self, line, var_name, var_value):
+    def set_variable_initial_value(self, line, var_name, var_value):
         space_count = len(line) - len(line.strip(' '))
 
         line = line.strip()
@@ -58,6 +58,12 @@ class ProgrammingLanguageJava(BaseProgrammingLanguage):
 
         return 0
 
+    def set_variable(self, var_name, var_value):
+        code = f'{var_name} = {var_value}'
+        self._write_code(code, True, add_extra_blank=False)
+
+        return 0
+
     def find_variable(self, lines, var_name):
         for idx, line in enumerate(lines):
             if var_name in line:
@@ -70,6 +76,11 @@ class ProgrammingLanguageJava(BaseProgrammingLanguage):
                 return idx + 1, line.index(var_name) + 1
 
         return -1, -1
+
+    def add_if_condition(self, first_part, operation, second_part):
+        code = f'if ({first_part} {operation} {second_part}) {{}}'
+
+        self._write_code(code, False)
 
 
 class ProgrammingLanguagePython(BaseProgrammingLanguage):

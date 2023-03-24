@@ -25,10 +25,16 @@ class BaseProgrammingLanguage(abc.ABC):
     def create_variable(self, var_type, var_name):
         pass
 
-    def set_variable(self, line, var_name, var_value):
+    def set_variable_initial_value(self, line, var_name, var_value):
+        pass
+
+    def set_variable(self, var_name, var_value):
         pass
 
     def find_variable(self, lines, var_name):
+        pass
+
+    def add_if_condition(self, first_part, operation, second_part):
         pass
 
     def _write_code(self, code, add_semicolon, add_extra_blank=True):
