@@ -53,12 +53,10 @@ class ProgrammingLanguageJava(BaseProgrammingLanguage):
             print(f'Could not set variable {var_name} to {var_value}')
             return 0
 
-        print(f'New line: {new_line}')
-
         writer = wr.Writer()
         writer.add_hotkey([Key.shift_l, Key.home])
         writer.execute()
-        
+
         self._write_code(new_line, True)
 
         return 0
@@ -82,6 +80,18 @@ class ProgrammingLanguageJava(BaseProgrammingLanguage):
 
         return -1
 
+    def find_method(self, lines, method_name):
+        method_name = method_name.lower() + '()'
+        for idx, line in enumerate(lines):
+            lower_line = line.lower()
+
+            if method_name in lower_line:
+                parenthesis_idx = line.index('()')
+                remaining = line[:parenthesis_idx]
+                return remaining[remaining.rindex(' ') + 1:]
+
+        return None
+
     def add_if_condition(self, first_part, operation, second_part):
         code = f'if ({first_part} {operation} {second_part}) {{}}'
 
@@ -89,6 +99,11 @@ class ProgrammingLanguageJava(BaseProgrammingLanguage):
 
     def add_return(self, value):
         code = f'return {value}'
+
+        self._write_code(code, True, add_extra_blank=False)
+
+    def add_call_method(self, method):
+        code = f'{method}()'
 
         self._write_code(code, True, add_extra_blank=False)
 

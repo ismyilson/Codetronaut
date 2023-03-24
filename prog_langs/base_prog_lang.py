@@ -36,10 +36,16 @@ class BaseProgrammingLanguage(abc.ABC):
     def find_variable(self, lines, var_name):
         pass
 
+    def find_method(self, lines, method_name):
+        pass
+
     def add_if_condition(self, first_part, operation, second_part):
         pass
 
     def add_return(self, value):
+        pass
+
+    def add_call_method(self, method):
         pass
 
     def _write_code(self, code, add_semicolon, add_extra_blank=True):

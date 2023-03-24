@@ -258,6 +258,10 @@ class Context:
 
         self._editor.select_line(line)
 
+    def get_method_exact_name(self, name):
+        method = self._prog_lang.find_method(self.current_file_lines, name)
+        return method
+
     ##########################################
     #               Prog Langs               #
     ##########################################
@@ -311,7 +315,7 @@ class Context:
     def set_variable(self, var_name, var_value):
         self.go_to_next_available_line()
 
-        end_line = self._prog_lang.set_variable(var_name, var_value)
+        self._prog_lang.set_variable(var_name, var_value)
 
         self.save_open_file()
 
@@ -324,6 +328,11 @@ class Context:
         self.go_to_next_available_line()
 
         self._prog_lang.add_return(value)
+
+    def add_call_method(self, method):
+        self.go_to_next_available_line()
+
+        self._prog_lang.add_call_method(method)
 
     ##########################################
     #                 Platform               #

@@ -23,3 +23,7 @@ def get_classes_in_module(module_name, subclass_of=None):
         classes.append(klass)
 
     return classes
+
+
+def last_index_of_list(from_list, find):
+    return len(from_list) - from_list[-1::-1].index(find) - 1

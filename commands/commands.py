@@ -2,7 +2,7 @@ import reader
 
 from commands.base_command import MainCommand, SubCommand
 from global_vars import t_event_quit
-from utils import get_classes_in_module
+from utils import get_classes_in_module, last_index_of_list
 
 
 def get_commands():
@@ -91,7 +91,15 @@ class SubcommandSetVariable(SubCommand):
             return []
 
         var_name = ''.join(params[:idx])
-        var_value = ''.join(params[idx+1:])
+
+        var_value_params = params[idx+1:]
+        if 'new' in var_value_params:
+            idx = var_value_params.index('new')
+            var_value = 'new '
+            var_value += ''.join([val.title() for val in var_value_params[idx+1:]])
+            var_value += '()'
+        else:
+            var_value = ''.join(params[idx+1])
 
         return [var_name, var_value, initial_value]
 
@@ -422,7 +430,7 @@ class SubcommandRenameVariable(SubCommand):
         new_var_name = ''
 
         try:
-            to_idx = self._last_index(params, 'to')
+            to_idx = last_index_of_list(params, 'to')
         except IndexError:
             return []
 
@@ -433,9 +441,6 @@ class SubcommandRenameVariable(SubCommand):
                 new_var_name += param
 
         return [var_name, new_var_name]
-
-    def _last_index(self, from_list, to_find):
-        return len(from_list) - from_list[-1::-1].index(to_find) - 1
 
 
 class CommandRename(MainCommand):
@@ -536,6 +541,7 @@ class SubcommandSelectLine(SubCommand):
         param = ''.join([param for param in params if param.isnumeric()])
         return [param]
 
+
 class CommandSelect(MainCommand):
     cmd = ['select']
 
@@ -544,3 +550,45 @@ class CommandSelect(MainCommand):
     subcommands = [
         SubcommandSelectLine
     ]
+
+
+class CommandCall(MainCommand):
+    cmd = ['call']
+
+    requires_subcommand = False
+
+    requires_params = True
+
+    def execute(self, context):
+        if len(self.params) > 1:
+            method = f'{self.params[1]}.{self.params[0]}'
+        else:
+            method = self.params[0]
+
+        context.add_call_method(method)
+
+    def validate_params(self, context):
+        exact_name = context.get_method_exact_name(self.params[0])
+
+        if exact_name is None:
+            return False
+
+        self.params[0] = exact_name
+        return True
+
+    def _valid_params(self, context, params):
+        var_name = None
+        method_name = ''
+        for param in params:
+            if '.' in param:  # Variable and method
+                idx = param.index('.')
+                var_name = param[:idx]
+                method_name = param[idx+1:]
+                break
+
+            method_name += param.title()
+
+        if method_name == '':
+            return []
+
+        return [method_name, var_name]
