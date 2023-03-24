@@ -313,7 +313,14 @@ class Context:
         self.save_open_file()
 
     def add_if_condition(self, first_part, operation, second_part):
+        self.go_to_next_available_line()
+
         self._prog_lang.add_if_condition(first_part, operation, second_part)
+
+    def add_return(self, value):
+        self.go_to_next_available_line()
+
+        self._prog_lang.add_return(value)
 
     ##########################################
     #                 Platform               #

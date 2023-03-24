@@ -82,6 +82,11 @@ class ProgrammingLanguageJava(BaseProgrammingLanguage):
 
         self._write_code(code, False)
 
+    def add_return(self, value):
+        code = f'return {value}'
+
+        self._write_code(code, True, add_extra_blank=False)
+
 
 class ProgrammingLanguagePython(BaseProgrammingLanguage):
     identifiers = ['python', 'py']

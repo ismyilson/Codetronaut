@@ -37,6 +37,9 @@ class BaseProgrammingLanguage(abc.ABC):
     def add_if_condition(self, first_part, operation, second_part):
         pass
 
+    def add_return(self, value):
+        pass
+
     def _write_code(self, code, add_semicolon, add_extra_blank=True):
         code_lines = code.split('\n')
         added_lines = 0

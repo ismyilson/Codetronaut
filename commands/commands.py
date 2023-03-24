@@ -243,6 +243,10 @@ class SubcommandCreateVariable(SubCommand):
 
     def _valid_modifiers(self, context, modifiers):
         var_type = ''.join([mod.title() for mod in modifiers])
+
+        if var_type.lower() in ['int', 'boolean', 'char']:
+            var_type = var_type.lower()
+
         return [var_type]
 
 
@@ -501,3 +505,18 @@ class CommandIf(MainCommand):
             second_param = 'false'
 
         return [first_param, operation, second_param]
+
+
+class CommandReturn(MainCommand):
+    cmd = ['return']
+
+    requires_subcommand = False
+
+    requires_params = True
+
+    def execute(self, context):
+        context.add_return(self.params[0])
+
+    def _valid_params(self, context, params):
+        param = ''.join(params)
+        return [param]
