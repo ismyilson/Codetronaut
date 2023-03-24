@@ -1,5 +1,7 @@
 import abc
 
+from pynput.keyboard import Key
+
 import writer as wr
 
 
@@ -16,7 +18,7 @@ class BaseEditor(abc.ABC):
     def new_line(self):
         writer = wr.Writer()
 
-        writer.add_hotkey('enter')
+        writer.add_key(Key.enter)
 
         writer.execute()
 
@@ -33,4 +35,7 @@ class BaseEditor(abc.ABC):
         pass
 
     def refactor_rename(self, new_name):
+        pass
+
+    def select_line(self, line):
         pass

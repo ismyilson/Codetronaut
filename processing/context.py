@@ -220,10 +220,9 @@ class Context:
         self.current_line = int(line)
 
     def go_to_variable(self, name):
-        line, col = self._prog_lang.find_variable(self.current_file_lines, name)
+        line = self._prog_lang.find_variable(self.current_file_lines, name)
 
-        self.go_to_line(line, col)
-        return line
+        self.go_to_line(line)
 
     def go_to_next_available_line(self, create_line=True):
         line = self.next_available_line(create_line)
@@ -252,6 +251,12 @@ class Context:
         self.go_to_variable(var_name)
 
         self._editor.refactor_rename(new_var_name)
+
+    def select_line(self, line):
+        if line is None:
+            line = self.current_line
+
+        self._editor.select_line(line)
 
     ##########################################
     #               Prog Langs               #
@@ -296,12 +301,10 @@ class Context:
         self.save_open_file()
 
     def set_variable_initial_value(self, var_name, var_value):
-        line_idx = self.go_to_variable(var_name)
-        line = self.current_file_lines[line_idx - 1]
+        self.go_to_variable(var_name)
+        line = self.current_file_lines[self.current_line - 1]
 
-        end_line = self._prog_lang.set_variable_initial_value(line, var_name, var_value)
-
-        self.go_to_line(self.current_line + end_line)
+        self._prog_lang.set_variable_initial_value(line, var_name, var_value)
 
         self.save_open_file()
 

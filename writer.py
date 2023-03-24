@@ -1,6 +1,8 @@
 import time
 import keyboard
 
+from pynput.keyboard import Controller
+
 
 class Writer:
     to_write: list
@@ -8,8 +10,11 @@ class Writer:
     def __init__(self):
         self.to_write = []
 
-    def add_hotkey(self, hotkey):
-        self.to_write.append((hotkey, 'hotkey'))
+    def add_hotkey(self, keys):
+        self.to_write.append((keys, 'hotkey'))
+
+    def add_key(self, key):
+        self.to_write.append((key, 'key'))
 
     def add_text(self, text):
         try:
@@ -34,14 +39,29 @@ class Writer:
         self.to_write.append((key, 'stop_pressing'))
 
     def execute(self):
+        controller = Controller()
+
         for element, element_type in self.to_write:
             if element_type == 'hotkey':
-                keyboard.press_and_release(element)
+                pressed = []
+
+                for key in element[:-1]:
+                    controller.press(key)
+                    pressed.insert(0, key)
+
+                controller.press(element[-1])
+                controller.release(element[-1])
+
+                for key in pressed:
+                    controller.release(key)
+            elif element_type == 'key':
+                controller.press(element)
+                controller.release(element)
             elif element_type == 'text':
                 keyboard.write(element)
             elif element_type == 'wait':
                 time.sleep(element)
             elif element_type == 'start_pressing':
-                keyboard.press(element)
+                controller.press(element)
             elif element_type == 'stop_pressing':
-                keyboard.release(element)
+                controller.release(element)

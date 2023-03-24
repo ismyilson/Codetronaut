@@ -1,8 +1,10 @@
-import keyboard
-
 from prog_langs.base_prog_lang import BaseProgrammingLanguage
 
 from utils import get_classes_in_module
+
+from pynput.keyboard import Key
+
+import writer as wr
 
 
 class ProgrammingLanguageJava(BaseProgrammingLanguage):
@@ -34,26 +36,29 @@ class ProgrammingLanguageJava(BaseProgrammingLanguage):
         return 0
 
     def set_variable_initial_value(self, line, var_name, var_value):
-        space_count = len(line) - len(line.strip(' '))
-
         line = line.strip()
         line_words = line.split()
 
-        new_line = ' ' * space_count
+        new_line = None
         for idx, word in enumerate(line_words):
             if word == f'{var_name};':
-                new_line += line[:-1] + f' = {var_value}'
+                new_line = line[:-1] + f' = {var_value}'
                 break
 
             if word == '=':
-                new_line += ' '.join(line_words[:idx + 1]) + f' {var_value}'
+                new_line = ' '.join(line_words[:idx + 1]) + f' {var_value}'
                 break
 
         if new_line is None:
             print(f'Could not set variable {var_name} to {var_value}')
             return 0
 
-        keyboard.press_and_release('ctrl+l')
+        print(f'New line: {new_line}')
+
+        writer = wr.Writer()
+        writer.add_hotkey([Key.shift_l, Key.home])
+        writer.execute()
+        
         self._write_code(new_line, True)
 
         return 0
@@ -73,9 +78,9 @@ class ProgrammingLanguageJava(BaseProgrammingLanguage):
                 if var_name in line_words[0]:
                     continue
 
-                return idx + 1, line.index(var_name) + 1
+                return idx + 1
 
-        return -1, -1
+        return -1
 
     def add_if_condition(self, first_part, operation, second_part):
         code = f'if ({first_part} {operation} {second_part}) {{}}'

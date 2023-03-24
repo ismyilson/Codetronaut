@@ -520,3 +520,27 @@ class CommandReturn(MainCommand):
     def _valid_params(self, context, params):
         param = ''.join(params)
         return [param]
+
+
+class SubcommandSelectLine(SubCommand):
+    cmd = ['line']
+
+    requires_params = False
+
+    def execute(self, context):
+        line = self.params[0] if len(self.params) > 0 else None
+
+        context.select_line(line)
+
+    def _valid_params(self, context, params):
+        param = ''.join([param for param in params if param.isnumeric()])
+        return [param]
+
+class CommandSelect(MainCommand):
+    cmd = ['select']
+
+    requires_subcommand = True
+
+    subcommands = [
+        SubcommandSelectLine
+    ]

@@ -1,5 +1,7 @@
 import abc
 
+from pynput.keyboard import Key
+
 import writer as wr
 
 
@@ -50,17 +52,17 @@ class BaseProgrammingLanguage(abc.ABC):
                 writer.add_text(word)
 
                 if word == '}':
-                    writer.add_hotkey('left arrow')
+                    writer.add_key(Key.left)
 
             if line != code_lines[-1]:
-                writer.add_hotkey('enter')
+                writer.add_key(Key.enter)
                 added_lines += 1
 
         if add_semicolon and self.requires_semicolon:
             writer.add_text(';')
 
         if add_extra_blank:
-            writer.add_hotkey('enter')
+            writer.add_key(Key.enter)
             added_lines += 1
 
         writer.execute()
