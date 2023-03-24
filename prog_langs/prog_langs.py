@@ -31,7 +31,7 @@ class ProgrammingLanguageJava(BaseProgrammingLanguage):
 
     def create_variable(self, var_type, var_name):
         code = f'{var_type} {var_name}'
-        self._write_code(code, True, False)
+        self._write_code(code, True)
 
         return 0
 
@@ -63,7 +63,7 @@ class ProgrammingLanguageJava(BaseProgrammingLanguage):
 
     def set_variable(self, var_name, var_value):
         code = f'{var_name} = {var_value}'
-        self._write_code(code, True, add_extra_blank=False)
+        self._write_code(code, True)
 
         return 0
 
@@ -100,12 +100,17 @@ class ProgrammingLanguageJava(BaseProgrammingLanguage):
     def add_return(self, value):
         code = f'return {value}'
 
-        self._write_code(code, True, add_extra_blank=False)
+        self._write_code(code, True)
 
     def add_call_method(self, method):
         code = f'{method}()'
 
-        self._write_code(code, True, add_extra_blank=False)
+        self._write_code(code, True)
+
+    def add_print(self, args):
+        code = f'System.out.println({",".join(args)})'
+
+        self._write_code(code, True)
 
 
 class ProgrammingLanguagePython(BaseProgrammingLanguage):

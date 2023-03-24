@@ -334,6 +334,11 @@ class Context:
 
         self._prog_lang.add_call_method(method)
 
+    def add_print(self, args):
+        self.go_to_next_available_line()
+
+        self._prog_lang.add_print(args)
+
     ##########################################
     #                 Platform               #
     ##########################################

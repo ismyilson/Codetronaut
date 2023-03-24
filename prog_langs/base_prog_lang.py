@@ -48,7 +48,10 @@ class BaseProgrammingLanguage(abc.ABC):
     def add_call_method(self, method):
         pass
 
-    def _write_code(self, code, add_semicolon, add_extra_blank=True):
+    def add_print(self, args):
+        pass
+
+    def _write_code(self, code, add_semicolon):
         code_lines = code.split('\n')
         added_lines = 0
 
@@ -59,6 +62,7 @@ class BaseProgrammingLanguage(abc.ABC):
 
                 if word == '}':
                     writer.add_key(Key.left)
+                    writer.add_key(Key.enter)
 
             if line != code_lines[-1]:
                 writer.add_key(Key.enter)
@@ -66,10 +70,6 @@ class BaseProgrammingLanguage(abc.ABC):
 
         if add_semicolon and self.requires_semicolon:
             writer.add_text(';')
-
-        if add_extra_blank:
-            writer.add_key(Key.enter)
-            added_lines += 1
 
         writer.execute()
 

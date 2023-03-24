@@ -592,3 +592,16 @@ class CommandCall(MainCommand):
             return []
 
         return [method_name, var_name]
+
+
+class CommandPrint(MainCommand):
+    cmd = ['print']
+
+    requires_params = True
+
+    def execute(self, context):
+        context.add_print(self.params)
+
+    def _valid_params(self, context, params):
+        param = ''.join(params)
+        return [param]
