@@ -27,6 +27,12 @@ class Writer:
     def add_wait(self, seconds):
         self.to_write.append((seconds, 'wait'))
 
+    def add_start_pressing(self, key):
+        self.to_write.append((key, 'start_pressing'))
+
+    def add_stop_pressing(self, key):
+        self.to_write.append((key, 'stop_pressing'))
+
     def execute(self):
         for element, element_type in self.to_write:
             if element_type == 'hotkey':
@@ -35,3 +41,7 @@ class Writer:
                 keyboard.write(element)
             elif element_type == 'wait':
                 time.sleep(element)
+            elif element_type == 'start_pressing':
+                keyboard.press(element)
+            elif element_type == 'stop_pressing':
+                keyboard.release(element)

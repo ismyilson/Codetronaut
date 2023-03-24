@@ -90,6 +90,18 @@ class BasePlatform(abc.ABC):
     def get_file_line_count(self, file):
         return sum(1 for line in open(file, 'r'))
 
+    def delete_lines_from_file(self, file, start, end):
+        start = int(start) - 1
+        end = int(end) - 1
+
+        with open(file, 'r') as f:
+            lines = f.readlines()
+
+        with open(file, 'w') as f:
+            for idx, line in enumerate(lines):
+                if idx < start or idx > end:
+                    f.write(line)
+
     def get_install_path(self, name):
         pass
 

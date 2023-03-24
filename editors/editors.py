@@ -22,14 +22,14 @@ class EditorVisualStudioCode(BaseEditor):
 
         writer.execute()
 
-    def go_to_line(self, line, col=10000):
+    def go_to_line(self, line, column=10000):
         line = str(line)
-        col = str(col)
+        column = str(column)
 
         writer = wr.Writer()
 
         writer.add_hotkey('ctrl+g')
-        writer.add_text(f'{line}:{col}')
+        writer.add_text(f'{line}:{column}')
         writer.add_hotkey('enter')
 
         writer.execute()
@@ -49,8 +49,11 @@ class EditorVisualStudioCode(BaseEditor):
 
         writer.execute()
 
-    def delete_lines(self, line_start, line_end):
-        line_start = str(line_start)
-        line_end = str(line_end)
+    def refactor_rename(self, new_name):
+        writer = wr.Writer()
 
+        writer.add_hotkey('F2')
+        writer.add_text(new_name)
+        writer.add_hotkey('enter')
 
+        writer.execute()

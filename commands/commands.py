@@ -340,8 +340,8 @@ class SubcommandDeleteLine(SubCommand):
     requires_params = False
 
     def execute(self, context):
-        line_start = -1
-        line_end = -1
+        line_start = None
+        line_end = None
 
         if len(self.params) == 1:
             line_start = self.params[0]
@@ -383,4 +383,53 @@ class CommandDelete(MainCommand):
 
     subcommands = [
         SubcommandDeleteLine
+    ]
+
+
+class SubcommandRenameVariable(SubCommand):
+    cmd = ['variable', 'var']
+
+    requires_params = True
+
+    def execute(self, context):
+        context.rename_variable(self.params[0], self.params[1])
+
+    def validate_params(self, context):
+        # Need context.find_variable here
+        if self.params[0] == '':
+            return False
+
+        if self.params[1] == '':
+            return False
+
+        return True
+
+    def _valid_params(self, context, params):
+        var_name = ''
+        new_var_name = ''
+
+        try:
+            to_idx = self._last_index(params, 'to')
+        except IndexError:
+            return []
+
+        for idx, param in enumerate(params):
+            if idx < to_idx:
+                var_name += param
+            elif idx > to_idx:
+                new_var_name += param
+
+        return [var_name, new_var_name]
+
+    def _last_index(self, from_list, to_find):
+        return len(from_list) - from_list[-1::-1].index(to_find) - 1
+
+
+class CommandRename(MainCommand):
+    cmd = ['rename']
+
+    requires_subcommand = True
+
+    subcommands = [
+        SubcommandRenameVariable
     ]

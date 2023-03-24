@@ -211,15 +211,18 @@ class Context:
 
         self.set_current_file(name)
 
-    def go_to_line(self, line):
-        self._editor.go_to_line(line)
+    def go_to_line(self, line, column=None):
+        if column:
+            self._editor.go_to_line(line, column)
+        else:
+            self._editor.go_to_line(line)
 
         self.current_line = int(line)
 
     def go_to_variable(self, name):
-        line = self._prog_lang.find_variable(self.current_file_lines, name)
-        self.go_to_line(line)
+        line, col = self._prog_lang.find_variable(self.current_file_lines, name)
 
+        self.go_to_line(line, col)
         return line
 
     def go_to_next_available_line(self, create_line=True):
@@ -239,7 +242,16 @@ class Context:
         return self.current_line + 1
 
     def delete_lines(self, line_start, line_end):
-        self._editor.delete_lines(line_start, line_end)
+        line_start = line_start if line_start else self.current_line
+        line_end = line_end if line_end else self.current_line
+
+        self.save_open_file()  # Save first
+        self._platform.delete_lines_from_file(self.current_file, line_start, line_end)
+
+    def rename_variable(self, var_name, new_var_name):
+        self.go_to_variable(var_name)
+
+        self._editor.refactor_rename(new_var_name)
 
     ##########################################
     #               Prog Langs               #
@@ -285,7 +297,7 @@ class Context:
 
     def set_variable(self, var_name, var_value):
         line_idx = self.go_to_variable(var_name)
-        line = self.current_file_lines[line_idx - 1].strip()
+        line = self.current_file_lines[line_idx - 1]
 
         end_line = self._prog_lang.set_variable(line, var_name, var_value)
 

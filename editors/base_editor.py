@@ -23,7 +23,7 @@ class BaseEditor(abc.ABC):
     def go_to_file(self, file):
         pass
 
-    def go_to_line(self, line):
+    def go_to_line(self, line, column=10000):
         pass
 
     def save_file(self):
@@ -32,5 +32,5 @@ class BaseEditor(abc.ABC):
     def save_all_files(self):
         pass
 
-    def delete_lines(self, line_start, line_end):
+    def refactor_rename(self, new_name):
         pass

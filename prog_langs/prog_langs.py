@@ -34,16 +34,19 @@ class ProgrammingLanguageJava(BaseProgrammingLanguage):
         return 0
 
     def set_variable(self, line, var_name, var_value):
+        space_count = len(line) - len(line.strip(' '))
+
+        line = line.strip()
         line_words = line.split()
 
-        new_line = None
+        new_line = ' ' * space_count
         for idx, word in enumerate(line_words):
             if word == f'{var_name};':
-                new_line = line[:-1] + f' = {var_value}'
+                new_line += line[:-1] + f' = {var_value}'
                 break
 
             if word == '=':
-                new_line = ' '.join(line_words[:idx + 1]) + f' {var_value}'
+                new_line += ' '.join(line_words[:idx + 1]) + f' {var_value}'
                 break
 
         if new_line is None:
@@ -64,9 +67,9 @@ class ProgrammingLanguageJava(BaseProgrammingLanguage):
                 if var_name in line_words[0]:
                     continue
 
-                return idx + 1
+                return idx + 1, line.index(var_name) + 1
 
-        return -1
+        return -1, -1
 
 
 class ProgrammingLanguagePython(BaseProgrammingLanguage):
