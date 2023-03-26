@@ -280,6 +280,13 @@ class Context:
     ##########################################
     #               Prog Langs               #
     ##########################################
+    def is_valid_extension(self, name):
+        for lang in self._available_langs:
+            if name in lang.extensions:
+                return True
+
+        return False
+
     def get_extension_by_prog_name(self, name):
         for lang in self._available_langs:
             if name in lang.identifiers:

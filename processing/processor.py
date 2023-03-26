@@ -54,6 +54,7 @@ class Processor(threading.Thread):
 
             if action.status == ActionStatus.READY:
                 self.memory.set_last_subject(action)
+                self.memory.set_last_command(action)
 
             actions.append(action)
 
@@ -70,7 +71,12 @@ class Processor(threading.Thread):
 
         # Handle no main command
         if main_cmd is None:
-            return Action(ActionStatus.INVALID_COMMAND, None)
+            # There's a possibility we recognized "and" as another command, so just load up the last command and copy it
+            command_words = self.memory.add_last_command(command_words)
+            main_cmd, main_cmd_idx = self._get_main_command(command_words)
+
+            if main_cmd is None:
+                return Action(ActionStatus.INVALID_COMMAND, None)
 
         # Handle main command can only be run without parameters
         if main_cmd.is_no_params_only:
@@ -83,9 +89,12 @@ class Processor(threading.Thread):
             if main_cmd.requires_subcommand:
                 return Action(ActionStatus.INVALID_SUBCOMMAND, main_cmd)
 
+            if main_cmd.default_subcommand:
+                return self._handle_command(main_cmd.default_subcommand(), command_words, main_cmd_idx, main_cmd_idx, main_command=main_cmd)
+
             return self._handle_command(main_cmd, command_words, main_cmd_idx, main_cmd_idx)
 
-        return self._handle_command(sub_cmd, command_words, main_cmd_idx, sub_cmd_idx)
+        return self._handle_command(sub_cmd, command_words, main_cmd_idx, sub_cmd_idx, main_command=main_cmd)
 
     def _get_main_command(self, command_words):
         for idx, cmd_word in enumerate(command_words):
@@ -105,7 +114,7 @@ class Processor(threading.Thread):
 
         return None, -1
 
-    def _handle_command(self, command, command_words, main_cmd_idx, sub_cmd_idx):
+    def _handle_command(self, command, command_words, main_cmd_idx, sub_cmd_idx, main_command=None):
         # First grab modifiers
         from_idx = 0
         if main_cmd_idx != sub_cmd_idx:
@@ -120,13 +129,13 @@ class Processor(threading.Thread):
             if command.requires_params:
                 return Action(ActionStatus.MISSING_DATA, command)
 
-            return Action(ActionStatus.READY, command)
+            return Action(ActionStatus.READY, command, main_command)
 
         params = command_words[sub_cmd_idx + 1:]
         if not command.set_params(self.context, params):
             return Action(ActionStatus.INVALID_DATA, command)
 
-        return Action(ActionStatus.READY, command)
+        return Action(ActionStatus.READY, command, main_command)
 
     def _process_action(self, action):
         if action.status == ActionStatus.INVALID_COMMAND:

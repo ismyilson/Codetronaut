@@ -107,7 +107,8 @@ class SubcommandSetVariable(SubCommand):
 class CommandSet(MainCommand):
     cmd = ['set']
 
-    requires_subcommand = True
+    requires_subcommand = False
+    default_subcommand = SubcommandSetVariable
 
     subcommands = [
         SubcommandSetEditor,
@@ -205,8 +206,10 @@ class SubcommandCreateFile(SubCommand):
 
     def _valid_modifiers(self, context, modifiers):
         for mod in modifiers:
-            ext = context.get_extension_by_prog_name(mod)
+            if context.is_valid_extension(mod):
+                return [mod]
 
+            ext = context.get_extension_by_prog_name(mod)
             if ext is None:
                 continue
 
@@ -307,7 +310,7 @@ class CommandCreate(MainCommand):
         SubcommandCreateFile,
         SubcommandCreateClass,
         SubcommandCreateVariable,
-        SubcommandCreateMethod
+        SubcommandCreateMethod,
     ]
 
 
@@ -716,19 +719,19 @@ class CommandFor(MainCommand):
     def _valid_params(self, context, params):
         try:
             in_idx = params.index('in')
-        except IndexError:
+        except ValueError:
             return []
 
         try:
             range_idx = params.index('range')
             return self._handle_for_range(params, in_idx, range_idx)
-        except IndexError:
+        except ValueError:
             return self._handle_for_each(params, in_idx)
 
     def _handle_for_range(self, params, in_idx, range_idx):
         try:
             to_idx = params.index('to')
-        except IndexError:
+        except ValueError:
             return []
 
         for_var = ''

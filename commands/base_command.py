@@ -44,17 +44,18 @@ class BaseCommand(abc.ABC):
         return []
 
 
+class SubCommand(BaseCommand):
+    pass
+
+
 class MainCommand(BaseCommand):
     requires_subcommand: bool = False
+    default_subcommand: SubCommand = None
 
-    subcommands: list = []
+    subcommands: list[SubCommand] = []
 
     @property
     def is_no_params_only(self):
         return not self.requires_subcommand and\
             len(self.subcommands) < 1 and\
             not self.requires_params
-
-
-class SubCommand(BaseCommand):
-    pass

@@ -8,9 +8,11 @@ SUBJECT_WORDS = [
 
 class Memory:
     last_subject: str
+    last_command: str
 
     def __init__(self):
         self.last_subject = ''
+        self.last_command = ''
 
     def set_last_subject(self, action):
         param = ''
@@ -33,3 +35,14 @@ class Memory:
 
         print(f'new command words: {command_words}')
         return command_words
+
+    def set_last_command(self, action):
+        modifiers = ' '.join(action.command.modifiers)
+
+        if action.from_command:
+            self.last_command = f'{action.from_command.cmd[0]} {modifiers} {action.command.cmd[0]}'
+        else:
+            self.last_command = f'{modifiers} {action.command.cmd[0]}'
+
+    def add_last_command(self, command_words):
+        return self.last_command.split() + command_words

@@ -13,7 +13,9 @@ class ActionStatus:
 class Action:
     status: ActionStatus
     command: BaseCommand
+    from_command: BaseCommand
 
-    def __init__(self, status, command):
+    def __init__(self, status, command, from_command=None):
         self.status = status
         self.command = command
+        self.from_command = from_command
