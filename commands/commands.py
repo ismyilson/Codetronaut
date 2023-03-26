@@ -468,15 +468,17 @@ class CommandIf(MainCommand):
         return valid_params
 
     def _parse_if_condition(self, params):
-        # If test is greater than 5
-        # If 5 is greater than test
         complete_sentence = ' '.join(params)
 
         operations = {
             'is greater than': '>',
+            'is higher than': '>',
             'is greater or equal to': '>=',
+            'is higher or equal to': '>=',
             'is less than': '<',
+            'is lower than': '<',
             'is less or equal to': '<=',
+            'is lower or equal to': '<=',
             'is equal to': '==',
             'is true': 'true',
             'is false': 'false'
@@ -490,7 +492,6 @@ class CommandIf(MainCommand):
                 idx_start = complete_sentence.index(special)
                 idx_end = idx_start + len(special) + 1
                 operation = special
-                print(f'Found: {special} at idx: {idx_start}, ending at {idx_end}')
                 break
 
         if idx_start == -1:
@@ -520,11 +521,37 @@ class CommandReturn(MainCommand):
     requires_params = True
 
     def execute(self, context):
-        context.add_return(self.params[0])
+        context.add_return(self.params)
 
     def _valid_params(self, context, params):
-        param = ''.join(params)
-        return [param]
+        complete_sentence = ' '.join(params)
+        operations = {
+            'plus': '+',
+            'minus': '-',
+            'multiplied by': '*',
+            'divided by': '/'
+        }
+
+        operation = None
+        idx_start = -1
+        idx_end = -1
+        for special in operations.keys():
+            if special in complete_sentence:
+                idx_start = complete_sentence.index(special)
+                idx_end = idx_start + len(special) + 1
+                operation = special
+                break
+
+        # Single variable
+        if idx_start == -1:
+            return [''.join(params)]
+
+        operation = operations.get(operation)
+
+        first_param = complete_sentence[:idx_start].replace(' ', '')
+        second_param = complete_sentence[idx_end:].replace(' ', '')
+
+        return [first_param, operation, second_param]
 
 
 class SubcommandSelectLine(SubCommand):
@@ -605,3 +632,51 @@ class CommandPrint(MainCommand):
     def _valid_params(self, context, params):
         param = ''.join(params)
         return [param]
+
+
+class SubcommandAddParameter(SubCommand):
+    cmd = ['parameter']
+
+    requires_params = True
+    requires_modifiers = False
+
+    def execute(self, context):
+        var_type = self.modifiers[0] if len(self.modifiers) > 0 else None
+        method_name = self.params[0]
+        var_name = self.params[1]
+
+        context.add_parameter_to_method(method_name, var_name, var_type)
+
+    def validate_params(self, context):
+        name = context.get_method_exact_name(self.params[0])
+
+        return name is not None
+
+    def _valid_params(self, context, params):
+        try:
+            to_idx = last_index_of_list(params, 'to')
+        except IndexError:
+            return []
+
+        var_name = ''.join(params[:to_idx])
+        method_name = ''.join(params[to_idx+1:])
+
+        return [method_name, var_name]
+
+    def _valid_modifiers(self, context, modifiers):
+        var_type = ''.join([mod.title() for mod in modifiers])
+
+        if var_type.lower() in ['int', 'boolean', 'char']:
+            var_type = var_type.lower()
+
+        return [var_type]
+
+
+class CommandAdd(MainCommand):
+    cmd = ['add']
+
+    requires_subcommand = True
+
+    subcommands = [
+        SubcommandAddParameter
+    ]

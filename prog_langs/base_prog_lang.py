@@ -34,21 +34,69 @@ class BaseProgrammingLanguage(abc.ABC):
         pass
 
     def find_variable(self, lines, var_name):
-        pass
+        var_name = var_name.lower()
+        for idx, line in enumerate(lines):
+            lower_line = line.lower()
+
+            if var_name in lower_line:
+                try:
+                    var_col = lower_line.index(var_name) + 1
+                except IndexError:
+                    continue
+
+                if var_col == 0:
+                    continue
+
+                return {
+                    'line': idx + 1,
+                    'var_col': var_col
+                }
+
+        return None
 
     def find_method(self, lines, method_name):
-        pass
+        method_name = method_name.lower()
+        for idx, line in enumerate(lines):
+            lower_line = line.lower()
+
+            if method_name in lower_line:
+                parenthesis_open_idx = line.rindex('(')
+                parenthesis_close_idx = line.rindex(')')
+
+                method_name = line[line.rindex(' ') + 1:parenthesis_open_idx]
+
+                params_col = parenthesis_close_idx + 1
+                params_line = line[parenthesis_open_idx + 1:parenthesis_close_idx]
+
+                params = []
+                if ',' in params_line:
+                    params = [params_line.split(',')]
+                else:
+                    if params_line != '':
+                        params = [params_line]
+
+                return {
+                    'name': method_name,
+                    'line': idx + 1,
+                    'params_col': params_col,
+                    'params': params
+                }
+
+        return None
 
     def add_if_condition(self, first_part, operation, second_part):
         pass
 
-    def add_return(self, value):
+    def add_return(self, params):
         pass
 
     def add_call_method(self, method):
         pass
 
     def add_print(self, args):
+        pass
+
+    def add_parameter_to_method(self, param_list, var_type, var_name):
         pass
 
     def _write_code(self, code, add_semicolon):

@@ -55,7 +55,9 @@ class EditorVisualStudioCode(BaseEditor):
         writer = wr.Writer()
 
         writer.add_key(Key.f2)
+        writer.add_wait(0.2)
         writer.add_text(new_name)
+        writer.add_wait(0.2)
         writer.add_key(Key.enter)
 
         writer.execute()

@@ -67,38 +67,13 @@ class ProgrammingLanguageJava(BaseProgrammingLanguage):
 
         return 0
 
-    def find_variable(self, lines, var_name):
-        for idx, line in enumerate(lines):
-            if var_name in line:
-                line_words = line.split()
-
-                # Must have type left of it
-                if var_name in line_words[0]:
-                    continue
-
-                return idx + 1
-
-        return -1
-
-    def find_method(self, lines, method_name):
-        method_name = method_name.lower() + '()'
-        for idx, line in enumerate(lines):
-            lower_line = line.lower()
-
-            if method_name in lower_line:
-                parenthesis_idx = line.index('()')
-                remaining = line[:parenthesis_idx]
-                return remaining[remaining.rindex(' ') + 1:]
-
-        return None
-
     def add_if_condition(self, first_part, operation, second_part):
         code = f'if ({first_part} {operation} {second_part}) {{}}'
 
         self._write_code(code, False)
 
-    def add_return(self, value):
-        code = f'return {value}'
+    def add_return(self, params):
+        code = f'return {" ".join(param for param in params)}'
 
         self._write_code(code, True)
 
@@ -111,6 +86,13 @@ class ProgrammingLanguageJava(BaseProgrammingLanguage):
         code = f'System.out.println({",".join(args)})'
 
         self._write_code(code, True)
+
+    def add_parameter_to_method(self, param_list, var_type, var_name):
+        code = f'{var_type} {var_name}'
+        if len(param_list) > 0:
+            code = ', ' + code
+
+        self._write_code(code, False)
 
 
 class ProgrammingLanguagePython(BaseProgrammingLanguage):

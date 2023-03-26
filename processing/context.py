@@ -130,6 +130,9 @@ class Context:
         self.start_editor()
 
     def set_current_file(self, file):
+        if file == '':
+            return
+
         self.current_file = file
         self.current_line = 1
 
@@ -220,9 +223,13 @@ class Context:
         self.current_line = int(line)
 
     def go_to_variable(self, name):
-        line = self._prog_lang.find_variable(self.current_file_lines, name)
+        line_data = self._prog_lang.find_variable(self.current_file_lines, name)
 
-        self.go_to_line(line)
+        if line_data is None:
+            print(f'Variable {name} not found')
+            return
+
+        self.go_to_line(line_data['line'], line_data['var_col'])
 
     def go_to_next_available_line(self, create_line=True):
         line = self.next_available_line(create_line)
@@ -234,6 +241,8 @@ class Context:
         if self.current_file_lines[self.current_line - 1].strip() == ''\
                 or self.current_file_lines[self.current_line - 1].strip() == '\n':
             return self.current_line
+
+        self.go_to_line(self.current_line)
 
         if create_line:
             self._editor.new_line()
@@ -252,6 +261,8 @@ class Context:
 
         self._editor.refactor_rename(new_var_name)
 
+        self.save_open_file()
+
     def select_line(self, line):
         if line is None:
             line = self.current_line
@@ -259,8 +270,9 @@ class Context:
         self._editor.select_line(line)
 
     def get_method_exact_name(self, name):
-        method = self._prog_lang.find_method(self.current_file_lines, name)
-        return method
+        method_data = self._prog_lang.find_method(self.current_file_lines, name)
+
+        return method_data['name'] if method_data else None
 
     ##########################################
     #               Prog Langs               #
@@ -324,10 +336,10 @@ class Context:
 
         self._prog_lang.add_if_condition(first_part, operation, second_part)
 
-    def add_return(self, value):
+    def add_return(self, params):
         self.go_to_next_available_line()
 
-        self._prog_lang.add_return(value)
+        self._prog_lang.add_return(params)
 
     def add_call_method(self, method):
         self.go_to_next_available_line()
@@ -339,6 +351,19 @@ class Context:
 
         self._prog_lang.add_print(args)
 
+    def add_parameter_to_method(self, method_name, var_name, var_type):
+        method_data = self._prog_lang.find_method(self.current_file_lines, method_name)
+
+        if method_data is None:
+            print(f'Method {method_name} not found')
+            return
+
+        self.go_to_line(method_data['line'], method_data['params_col'])
+
+        self._prog_lang.add_parameter_to_method(method_data['params'], var_type, var_name)
+
+        self.save_open_file()
+
     ##########################################
     #                 Platform               #
     ##########################################
@@ -348,7 +373,7 @@ class Context:
     def create_file(self, name):
         self._platform.create_file(name, root_dir=self.workdir)
 
-        time.sleep(1)  # Updating new files in IDEs and stuff requires bit of time
+        time.sleep(1)  # Updating new files in IDEs and stuff requires a bit of time
 
         self.go_to_file(name)
 
