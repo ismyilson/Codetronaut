@@ -94,6 +94,16 @@ class ProgrammingLanguageJava(BaseProgrammingLanguage):
 
         self._write_code(code, False)
 
+    def add_for_each(self, var_name, array_name):
+        code = f'for ({var_name} : {array_name}) {{}}'
+
+        self._write_code(code, False)
+
+    def add_for_loop(self, var_name, start, end):
+        code = f'for (int {var_name} = {start}; {var_name} < {end}; ++{var_name}) {{}}'
+
+        self._write_code(code, False)
+
 
 class ProgrammingLanguagePython(BaseProgrammingLanguage):
     identifiers = ['python', 'py']

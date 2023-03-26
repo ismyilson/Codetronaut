@@ -223,13 +223,13 @@ class Context:
         self.current_line = int(line)
 
     def go_to_variable(self, name):
-        line_data = self._prog_lang.find_variable(self.current_file_lines, name)
+        var_data = self.get_variable_data(name)
 
-        if line_data is None:
+        if var_data is None:
             print(f'Variable {name} not found')
             return
 
-        self.go_to_line(line_data['line'], line_data['var_col'])
+        self.go_to_line(var_data['line_index'], var_data['var_index'])
 
     def go_to_next_available_line(self, create_line=True):
         line = self.next_available_line(create_line)
@@ -269,10 +269,13 @@ class Context:
 
         self._editor.select_line(line)
 
-    def get_method_exact_name(self, name):
-        method_data = self._prog_lang.find_method(self.current_file_lines, name)
+    def get_variable_data(self, name):
+        variable_data = self._prog_lang.find_variable(self.current_file_lines, name)
+        return variable_data
 
-        return method_data['name'] if method_data else None
+    def get_method_data(self, name):
+        method_data = self._prog_lang.get_method_data(self.current_file_lines, name)
+        return method_data
 
     ##########################################
     #               Prog Langs               #
@@ -352,15 +355,29 @@ class Context:
         self._prog_lang.add_print(args)
 
     def add_parameter_to_method(self, method_name, var_name, var_type):
-        method_data = self._prog_lang.find_method(self.current_file_lines, method_name)
+        method_data = self._prog_lang.get_method_data(self.current_file_lines, method_name)
 
         if method_data is None:
             print(f'Method {method_name} not found')
             return
 
-        self.go_to_line(method_data['line'], method_data['params_col'])
+        self.go_to_line(method_data['line_index'], method_data['params_end_index'] + 1)
 
         self._prog_lang.add_parameter_to_method(method_data['params'], var_type, var_name)
+
+        self.save_open_file()
+
+    def add_for_each(self, var_name, array_name):
+        self.go_to_next_available_line()
+
+        self._prog_lang.add_for_each(var_name, array_name)
+
+        self.save_open_file()
+
+    def add_for_loop(self, var_name, start, end):
+        self.go_to_next_available_line()
+
+        self._prog_lang.add_for_loop(var_name, start, end)
 
         self.save_open_file()
 

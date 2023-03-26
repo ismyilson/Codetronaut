@@ -595,12 +595,12 @@ class CommandCall(MainCommand):
         context.add_call_method(method)
 
     def validate_params(self, context):
-        exact_name = context.get_method_exact_name(self.params[0])
+        method_data = context.get_method_data(self.params[0])
 
-        if exact_name is None:
+        if method_data is None:
             return False
 
-        self.params[0] = exact_name
+        self.params[0] = method_data['name']
         return True
 
     def _valid_params(self, context, params):
@@ -648,9 +648,9 @@ class SubcommandAddParameter(SubCommand):
         context.add_parameter_to_method(method_name, var_name, var_type)
 
     def validate_params(self, context):
-        name = context.get_method_exact_name(self.params[0])
+        method_data = context.get_method_data(self.params[0])
 
-        return name is not None
+        return method_data is not None
 
     def _valid_params(self, context, params):
         try:
@@ -680,3 +680,99 @@ class CommandAdd(MainCommand):
     subcommands = [
         SubcommandAddParameter
     ]
+
+
+class CommandFor(MainCommand):
+    cmd = ['for']
+
+    requires_subcommand = False
+
+    requires_params = True
+
+    def execute(self, context):
+        if len(self.params) == 2:
+            context.add_for_each(self.params[0], self.params[1])
+        elif len(self.params) == 3:
+            context.add_for_loop(self.params[0], self.params[1], self.params[2])
+
+    def validate_params(self, context):
+        if len(self.params) == 3:
+            return True
+
+        var_data = context.get_variable_data(self.params[1])
+
+        if var_data is None:
+            return False
+
+        var_type = var_data['type']
+        if '[' not in var_type:
+            print('Not an array')
+            return False
+
+        var_type = var_type[:var_type.index('[')]
+        self.params[0] = f'{var_type} {self.params[0]}'
+        return True
+
+    def _valid_params(self, context, params):
+        try:
+            in_idx = params.index('in')
+        except IndexError:
+            return []
+
+        try:
+            range_idx = params.index('range')
+            return self._handle_for_range(params, in_idx, range_idx)
+        except IndexError:
+            return self._handle_for_each(params, in_idx)
+
+    def _handle_for_range(self, params, in_idx, range_idx):
+        try:
+            to_idx = params.index('to')
+        except IndexError:
+            return []
+
+        for_var = ''
+        for param in params[:in_idx]:
+            if param == 'every':
+                continue
+
+            for_var += param.strip()
+
+        if for_var == '':
+            return []
+
+        for_range_start = ''
+        for param in params[range_idx+1:to_idx]:
+            for_range_start += param.strip()
+
+        if for_range_start == '':
+            return []
+
+        for_range_end = ''
+        for param in params[to_idx+1:]:
+            for_range_end += param.strip()
+
+        if for_range_end == '':
+            return []
+
+        return [for_var, for_range_start, for_range_end]
+
+    def _handle_for_each(self, params, in_idx):
+        for_var = ''
+        for param in params[:in_idx]:
+            if param == 'every':
+                continue
+
+            for_var += param.strip()
+
+        if for_var == '':
+            return []
+
+        for_end_var = ''
+        for param in params[in_idx + 1:]:
+            for_end_var += param.strip()
+
+        if for_end_var == '':
+            return []
+
+        return [for_var, for_end_var]

@@ -39,50 +39,111 @@ class BaseProgrammingLanguage(abc.ABC):
             lower_line = line.lower()
 
             if var_name in lower_line:
-                try:
-                    var_col = lower_line.index(var_name) + 1
-                except IndexError:
+                var_data = self._extract_var_data(line, var_name, idx + 1)
+
+                if var_data is None:
                     continue
 
-                if var_col == 0:
-                    continue
-
-                return {
-                    'line': idx + 1,
-                    'var_col': var_col
-                }
+                return var_data
 
         return None
 
-    def find_method(self, lines, method_name):
+    def _extract_var_data(self, line, name, line_idx):
+        words = line.replace(';', '').split()
+
+        name_idx = -1
+        assignation_idx = -1
+        is_static = False
+        access_type = None
+        for idx, word in enumerate(words):
+            if word.lower() == name:
+                name_idx = idx
+                continue
+
+            if word == '=':
+                assignation_idx = idx
+                continue
+
+            if word == 'static':
+                is_static = True
+                continue
+
+            if word in ['public', 'private', 'protected']:
+                access_type = word
+                continue
+
+        if name_idx == -1:
+            return None
+
+        var_name = words[name_idx]
+        var_type = words[name_idx - 1] if name_idx != 0 else None
+        var_value = ''.join(words[assignation_idx + 1:]) if assignation_idx != -1 else None
+        var_idx = line.lower().index(name)
+        return {
+            'name': var_name,
+            'type': var_type,
+            'value': var_value,
+            'static': is_static,
+            'access_type': access_type if access_type is not None else 'private',
+            'line_index': line_idx,
+            'var_index': var_idx,
+        }
+
+    def get_method_data(self, lines, method_name):
         method_name = method_name.lower()
         for idx, line in enumerate(lines):
             lower_line = line.lower()
 
             if method_name in lower_line:
-                parenthesis_open_idx = line.rindex('(')
-                parenthesis_close_idx = line.rindex(')')
+                method_data = self._extract_method_data(line, method_name, idx + 1)
 
-                method_name = line[line.rindex(' ') + 1:parenthesis_open_idx]
+                if method_data is None:
+                    continue
 
-                params_col = parenthesis_close_idx + 1
-                params_line = line[parenthesis_open_idx + 1:parenthesis_close_idx]
-
-                params = []
-                if ',' in params_line:
-                    params = [params_line.split(',')]
-                else:
-                    if params_line != '':
-                        params = [params_line]
-
-                return {
-                    'name': method_name,
-                    'line': idx + 1,
-                    'params_col': params_col,
-                    'params': params
-                }
+                return method_data
 
         return None
+
+    def _extract_method_data(self, line, name, line_idx):
+        words = line.replace(';', '').split()
+
+        name_idx = -1
+        is_static = False
+        access_type = None
+        for idx, word in enumerate(words):
+            if '(' in word:
+                name_idx = idx
+                continue
+
+            if word == 'static':
+                is_static = True
+                continue
+
+            if word in ['public', 'private', 'protected']:
+                access_type = word
+                continue
+
+        if name_idx == -1:
+            return None
+
+        method_name = words[name_idx][:words[name_idx].index('(')]
+        method_type = words[name_idx - 1]
+
+        parenthesis_open = line.index('(')
+        parenthesis_closed = line.index(')')
+        method_params = [param.strip() for param in line[parenthesis_open + 1:parenthesis_closed].split(',')]
+
+        method_idx = line.lower().index(name)
+        return {
+            'name': method_name,
+            'type': method_type,
+            'params': method_params if method_params != [''] else [],
+            'static': is_static,
+            'access_type': access_type if access_type is not None else 'private',
+            'line_index': line_idx,
+            'method_index': method_idx,
+            'params_end_index': parenthesis_closed
+        }
 
     def add_if_condition(self, first_part, operation, second_part):
         pass
@@ -97,6 +158,12 @@ class BaseProgrammingLanguage(abc.ABC):
         pass
 
     def add_parameter_to_method(self, param_list, var_type, var_name):
+        pass
+
+    def add_for_each(self, var_name, array_name):
+        pass
+
+    def add_for_loop(self, var_name, start, end):
         pass
 
     def _write_code(self, code, add_semicolon):
