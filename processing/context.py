@@ -9,7 +9,7 @@ from editors.editors import get_editors
 from platforms.base_platform import BasePlatform, UnsupportedPlatform
 from platforms.platforms import get_platforms
 
-from prog_langs.base_prog_lang import BaseProgrammingLanguage, UnsupportedProgrammingLanguage
+from prog_langs.base_prog_lang import BaseProgrammingLanguage
 from prog_langs.prog_langs import get_prog_langs
 
 CONTEXT_SAVE_PATH = r'%LOCALAPPDATA%\Codetronaut\context.json'

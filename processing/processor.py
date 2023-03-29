@@ -1,10 +1,13 @@
 import threading
 import time
+import reader
 
 from queue import Queue, Empty
 
 from commands.action import Action, ActionStatus
 from commands.commands import get_commands
+
+from input_handling.user_input import UserInput
 
 from processing.context import Context
 from processing.memory import Memory
@@ -20,6 +23,8 @@ class Processor(threading.Thread):
     _gui_data_queue: Queue
 
     _commands: list
+
+    _current_command_idx: int
 
     def __init__(self, processor_queue, gui_data_queue):
         super().__init__()
@@ -49,7 +54,9 @@ class Processor(threading.Thread):
 
     def _process(self, user_input):
         actions = []
-        for command_words in user_input.commands:
+        for idx, command_words in enumerate(user_input.commands):
+            self._current_command_idx = idx
+
             action = self._process_new_command_text(command_words)
 
             if action.status == ActionStatus.READY:
@@ -72,10 +79,13 @@ class Processor(threading.Thread):
         # Handle no main command
         if main_cmd is None:
             # There's a possibility we recognized "and" as another command, so just load up the last command and copy it
-            command_words = self.memory.add_last_command(command_words)
-            main_cmd, main_cmd_idx = self._get_main_command(command_words)
+            if self._current_command_idx > 0:
+                command_words = self.memory.add_last_command(command_words)
+                main_cmd, main_cmd_idx = self._get_main_command(command_words)
 
-            if main_cmd is None:
+                if main_cmd is None:
+                    return Action(ActionStatus.INVALID_COMMAND, None)
+            else:
                 return Action(ActionStatus.INVALID_COMMAND, None)
 
         # Handle main command can only be run without parameters
@@ -139,30 +149,43 @@ class Processor(threading.Thread):
 
     def _process_action(self, action):
         if action.status == ActionStatus.INVALID_COMMAND:
-            print(f'Invalid command')
+            # Not sure if I want this, its a little annoying..
+            # reader.read_text(f'Invalid command')
             return
 
         if action.status == ActionStatus.INVALID_SUBCOMMAND:
-            print(f'Invalid subcommand')
+            reader.read_text(f'Invalid subcommand for command: {action.command.cmd[0]}')
             return
 
         if action.status == ActionStatus.MISSING_DATA:
-            print(f'Missing data')
+            if action.command.last_error_message:
+                reader.read_text(action.command.last_error_message)
+            else:
+                reader.read_text(f'Missing data for command {action.command.cmd[0]}')
             return
 
         if action.status == ActionStatus.INVALID_DATA:
-            print(f'Invalid data')
+            if action.command.last_error_message:
+                reader.read_text(action.command.last_error_message)
+            else:
+                reader.read_text(f'Invalid data for command {action.command.cmd[0]}')
             return
 
         if action.status == ActionStatus.MISSING_MODIFIERS:
-            print(f'Missing modifiers')
+            if action.command.last_error_message:
+                reader.read_text(action.command.last_error_message)
+            else:
+                reader.read_text(f'Invalid modifiers for command {action.command.cmd[0]}')
             return
 
         if action.status == ActionStatus.READY:
             print(f'Executing command with params: {action.command.params}')
 
             if not action.command.validate_params(self.context):
-                print(f'Cant validate params: {action.command.cmd[0]} {action.command.params}')
+                if action.command.last_error_message:
+                    reader.read_text(action.command.last_error_message)
+                else:
+                    reader.read_text(f'Invalid parameters for command {action.command.cmd[0]}')
                 return
 
             action.command.execute(self.context)

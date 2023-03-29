@@ -10,6 +10,8 @@ class BaseCommand(abc.ABC):
     requires_params: bool = False
     params: list[str] = []
 
+    last_error_message: str = None
+
     def execute(self, context):
         pass
 

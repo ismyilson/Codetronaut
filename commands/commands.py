@@ -35,6 +35,7 @@ class SubcommandSetEditor(SubCommand):
 
     def validate_params(self, context):
         if not context.is_valid_editor_name(self.params[0]):
+            self.last_error_message = f'Editor {self.params[0]} is not recognized'
             return False
 
         return True
@@ -61,7 +62,7 @@ class SubcommandSetWorkdir(SubCommand):
         path = askdirectory(title='Select folder')
 
         if path is None:
-            print('No directory set')
+            reader.read_text(f'No directory set')
             return
 
         context.set_workdir(path)
@@ -88,6 +89,7 @@ class SubcommandSetVariable(SubCommand):
         try:
             idx = params.index('to')
         except ValueError:
+            self.last_error_message = f'Invalid param structure, use: "variable name", "to", "variable value"'
             return []
 
         var_name = ''.join(params[:idx])
@@ -138,6 +140,7 @@ class SubcommandOpenFile(SubCommand):
                 self.params[0] = ''.join(file)
                 return True
 
+        self.last_error_message = f'Cant find file {file_name}'
         return False
 
     def _valid_params(self, context, params):
@@ -192,6 +195,7 @@ class SubcommandCreateFile(SubCommand):
 
     def validate_params(self, context):
         if context.file_exists(self.params[0]):
+            self.last_error_message = f'File {self.params[0]} already exists'
             return False
 
         return True
@@ -225,6 +229,10 @@ class SubcommandCreateClass(SubCommand):
 
     def execute(self, context):
         context.create_class(self.params[0])
+
+    def validate_params(self, context):
+        # Need to check if class exists here
+        return True
 
     def _valid_params(self, context, params):
         param = ''.join([param.title() for param in params])
@@ -293,6 +301,7 @@ class SubcommandCreateMethod(SubCommand):
         method_name = ''.join([param.title() for param in params])
 
         if method_name == '':
+            self.last_error_message = 'Method name required'
             return []
 
         return [method_name]
@@ -323,10 +332,8 @@ class SubcommandGoLine(SubCommand):
         context.go_to_line(self.params[0])
 
     def validate_params(self, context):
-        if len(self.params) < 1:
-            return False
-
         if int(self.params[0]) > context.get_current_file_line_count():
+            self.last_error_message = f'Invalid line'
             return False
 
         return True
@@ -339,6 +346,10 @@ class SubcommandGoLine(SubCommand):
                 break
 
             num_str += param
+
+        if num_str == '':
+            self.last_error_message = f'Must specify a line'
+            return []
 
         return [num_str]
 
@@ -363,41 +374,64 @@ class SubcommandDeleteLine(SubCommand):
 
     requires_params = False
 
-    def execute(self, context):
-        line_start = None
-        line_end = None
+    _connectors = ['to', 'through']
 
-        if len(self.params) == 1:
-            line_start = self.params[0]
-        elif len(self.params) > 1:
-            line_start = self.params[0]
-            line_end = self.params[1]
+    def execute(self, context):
+        line_start = self.params[0] if len(self.params) > 0 else None
+        line_end = self.params[1] if len(self.params) > 1 else None
 
         context.delete_lines(line_start, line_end)
 
     def validate_params(self, context):
+        line_count = context.get_current_file_line_count()
+        if len(self.params) == 0:
+            return True
+        elif len(self.params) == 1:
+            if self.params[0] > line_count:
+                self.last_error_message = f'Line doesnt exist'
+                return False
+        else:
+            if self.params[0] > self.params[1]:
+                tmp = self.params[0]
+                self.params[0] = self.params[1]
+                self.params[1] = tmp
+
+            if self.params[1] > line_count:
+                self.last_error_message = f'Line doesnt exist'
+                return False
+
         return True
 
     def _valid_params(self, context, params):
         if len(params) == 1:
-            return [params[0]]
+            return [int(params[0])]
 
-        line_start = ''
-        line_end = ''
+        idx = self._find_idx(params)
+        if idx == -1:
+            self.last_error_message = f'Invalid param structure. Use example: Line 10 to 15'
+            return []
 
-        switch = False
-        for param in params:
-            if param.isnumeric():
-                if switch:
-                    line_end += param
-                else:
-                    line_start += param
-            else:
-                if param == 'to' or param == 'through':
-                    switch = True
-                    continue
+        line_start = ''.join([param for param in params[:idx] if param.isnumeric()])
+        line_end = ''.join([param for param in params[idx+1:] if param.isnumeric()])
 
-        return [line_start, line_end]
+        if line_start == '':
+            self.last_error_message = f'Invalid param structure, must specify a starting line'
+            return []
+
+        if line_end == '':
+            self.last_error_message = f'Invalid param structure, must specify an ending line'
+            return []
+
+        return [int(line_start), int(line_end)]
+
+    def _find_idx(self, params):
+        for connector in self._connectors:
+            try:
+                return params.index(connector)
+            except ValueError:
+                continue
+
+        return -1
 
 
 class CommandDelete(MainCommand):
@@ -419,29 +453,30 @@ class SubcommandRenameVariable(SubCommand):
         context.rename_variable(self.params[0], self.params[1])
 
     def validate_params(self, context):
-        # Need context.find_variable here
-        if self.params[0] == '':
-            return False
+        var_data = context.get_variable_data(self.params[0])
 
-        if self.params[1] == '':
+        if var_data is None:
+            self.last_error_message = f'Variable {self.params[0]} does not exist'
             return False
 
         return True
 
     def _valid_params(self, context, params):
-        var_name = ''
-        new_var_name = ''
-
         try:
             to_idx = last_index_of_list(params, 'to')
         except IndexError:
             return []
 
-        for idx, param in enumerate(params):
-            if idx < to_idx:
-                var_name += param
-            elif idx > to_idx:
-                new_var_name += param
+        var_name = ''.join(params[:to_idx])
+        new_var_name = ''.join(params[to_idx+1:])
+
+        if var_name == '':
+            self.last_error_message = f'Invalid param structure, specify a variable name'
+            return []
+
+        if new_var_name == '':
+            self.last_error_message = f'Invalid param structure, specify a new variable name'
+            return []
 
         return [var_name, new_var_name]
 
@@ -463,34 +498,39 @@ class CommandIf(MainCommand):
 
     requires_params = True
 
+    _operations = {
+        'is greater than': '>',
+        'is higher than': '>',
+        'is greater or equal to': '>=',
+        'is higher or equal to': '>=',
+        'is less than': '<',
+        'is lower than': '<',
+        'is less or equal to': '<=',
+        'is lower or equal to': '<=',
+        'is equal to': '==',
+        'is true': 'true',
+        'is false': 'false'
+    }
+
     def execute(self, context):
         context.add_if_condition(self.params[0], self.params[1], self.params[2])
 
     def _valid_params(self, context, params):
         valid_params = self._parse_if_condition(params)
+
+        if len(valid_params) < 1:
+            self.last_error_message = 'Invalid param structure, specify the condition'
+            return []
+
         return valid_params
 
     def _parse_if_condition(self, params):
         complete_sentence = ' '.join(params)
 
-        operations = {
-            'is greater than': '>',
-            'is higher than': '>',
-            'is greater or equal to': '>=',
-            'is higher or equal to': '>=',
-            'is less than': '<',
-            'is lower than': '<',
-            'is less or equal to': '<=',
-            'is lower or equal to': '<=',
-            'is equal to': '==',
-            'is true': 'true',
-            'is false': 'false'
-        }
-
         idx_start = -1
         idx_end = -1
         operation = None
-        for special in operations.keys():
+        for special in self._operations.keys():
             if special in complete_sentence:
                 idx_start = complete_sentence.index(special)
                 idx_end = idx_start + len(special) + 1
@@ -498,10 +538,9 @@ class CommandIf(MainCommand):
                 break
 
         if idx_start == -1:
-            print('Not found')
-            return
+            return []
 
-        operation = operations.get(operation)
+        operation = self._operations.get(operation)
 
         first_param = complete_sentence[:idx_start].replace(' ', '')
         second_param = complete_sentence[idx_end:].replace(' ', '')
@@ -523,22 +562,23 @@ class CommandReturn(MainCommand):
 
     requires_params = True
 
+    _operations = {
+        'plus': '+',
+        'minus': '-',
+        'multiplied by': '*',
+        'divided by': '/'
+    }
+
     def execute(self, context):
         context.add_return(self.params)
 
     def _valid_params(self, context, params):
         complete_sentence = ' '.join(params)
-        operations = {
-            'plus': '+',
-            'minus': '-',
-            'multiplied by': '*',
-            'divided by': '/'
-        }
 
         operation = None
         idx_start = -1
         idx_end = -1
-        for special in operations.keys():
+        for special in self._operations.keys():
             if special in complete_sentence:
                 idx_start = complete_sentence.index(special)
                 idx_end = idx_start + len(special) + 1
@@ -547,9 +587,14 @@ class CommandReturn(MainCommand):
 
         # Single variable
         if idx_start == -1:
-            return [''.join(params)]
+            var_name = ''.join(params)
+            if var_name == '':
+                self.last_error_message = 'Invalid param structure, specify what to return'
+                return []
 
-        operation = operations.get(operation)
+            return [var_name]
+
+        operation = self._operations.get(operation)
 
         first_param = complete_sentence[:idx_start].replace(' ', '')
         second_param = complete_sentence[idx_end:].replace(' ', '')
@@ -566,6 +611,17 @@ class SubcommandSelectLine(SubCommand):
         line = self.params[0] if len(self.params) > 0 else None
 
         context.select_line(line)
+
+    def validate_params(self, context):
+        if len(self.params) < 1:
+            return True
+
+        line = int(self.params[0])
+        if line > context.get_current_file_line_count():
+            self.last_error_message = 'Invalid line'
+            return False
+
+        return True
 
     def _valid_params(self, context, params):
         param = ''.join([param for param in params if param.isnumeric()])
@@ -601,7 +657,10 @@ class CommandCall(MainCommand):
         method_data = context.get_method_data(self.params[0])
 
         if method_data is None:
+            self.last_error_message = f'Method {self.params[0]} not found'
             return False
+
+        # Should maybe check variable exists here
 
         self.params[0] = method_data['name']
         return True
@@ -609,6 +668,7 @@ class CommandCall(MainCommand):
     def _valid_params(self, context, params):
         var_name = None
         method_name = ''
+
         for param in params:
             if '.' in param:  # Variable and method
                 idx = param.index('.')
@@ -619,6 +679,7 @@ class CommandCall(MainCommand):
             method_name += param.title()
 
         if method_name == '':
+            self.last_error_message = 'Invalid param structure, specify a method name'
             return []
 
         return [method_name, var_name]
@@ -653,22 +714,36 @@ class SubcommandAddParameter(SubCommand):
     def validate_params(self, context):
         method_data = context.get_method_data(self.params[0])
 
-        return method_data is not None
+        if method_data is None:
+            self.last_error_message = f'Method {self.params[0]} does not exist'
+            return False
+
+        return True
 
     def _valid_params(self, context, params):
         try:
             to_idx = last_index_of_list(params, 'to')
         except IndexError:
+            self.last_error_message = f'Invalid param structure. Use example: Add String parameter name to setName'
             return []
 
         var_name = ''.join(params[:to_idx])
         method_name = ''.join(params[to_idx+1:])
+
+        if var_name == '':
+            self.last_error_message = 'Invalid param structure, specify the name of the parameter'
+            return []
+
+        if method_name == '':
+            self.last_error_message = 'Invalid param structure, specify the name of the method'
+            return []
 
         return [method_name, var_name]
 
     def _valid_modifiers(self, context, modifiers):
         var_type = ''.join([mod.title() for mod in modifiers])
 
+        # This needs to change to context.get_programming_language_variable_types() or something like that
         if var_type.lower() in ['int', 'boolean', 'char']:
             var_type = var_type.lower()
 
