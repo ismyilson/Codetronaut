@@ -15,4 +15,4 @@ screeninfo~=0.8.1
 pytest~=7.2.2
 pytest-mock~=3.10.0
 keyboard~=0.13.5
-pynput~=1.7.6
+ffmpeg~=1.4.0
