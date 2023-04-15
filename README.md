@@ -33,7 +33,7 @@ Codetronaut is a voice assistant that allows developers to code without ever tou
 
 [(Back to top)](#table-of-contents)
 
-Some commands are used for configuration, and due to their nature might require a couple clicks (don't worry, these are the only times you'll click!), that being some useful commands to get started are:
+Some commands are used for configuration, and due to their nature might require a couple clicks (don't worry, these are the only times you'll click!), that being said, some useful commands to get started are:
 - `Set work directory`. This will show a popup window asking you to select a directory, which will be marked as work directory.
 -  `Set editor to <editor of choice>`. This will set the editor (and start it) to your editor of choice.*
 
